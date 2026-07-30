@@ -9,4 +9,16 @@
         :param {{ emit.args.name }}: {{ emit.args.doc }}
         :type {{ emit.args.name }}: {{ emit.args.type }}{% endif %}
         """
-        await self.client.send("{{emit.event}}"{% if emit.args %}, {{ emit.args.name }}{% endif %})
+{% if emit.args %}
+{% set arg = emit.args.name %}
+{% if emit.args.pydantic_model %}
+{% set arg = emit.args.pydantic_model ~ ".validate_python(" ~ arg ~ ",)" %}
+{% endif %}
+{% if emit.args.cast %}
+{% set arg = 'typing.cast("' ~ emit.args.cast ~ '", ' ~ arg ~ ',)' %}
+{% endif %}
+{% endif %}
+        await self.client.send(
+            "{{ emit.event }}"
+            {% if emit.args %}, {{ arg }}{% endif %}
+        )

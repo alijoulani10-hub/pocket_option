@@ -25,6 +25,8 @@ __all__ = (
     "OpenDealRequest",
     "OpenPendingDealRequest",
     "OpenPendingDealRequestOpenType",
+    "SignalsStatsType",
+    "SignalsStatsTypeAdapter",
     "SuccessAuthEvent",
     "SuccessUpdateBalanceEvent",
     "UpdateAssetItem",
@@ -762,3 +764,7 @@ class DealsRolloverRequest(BaseRequest):
 
 class CancelPendingDealRequest(BaseRequest):
     ticket: uuid.UUID
+
+
+type SignalsStatsType = list[tuple[int, list[tuple[Asset, int]]]]
+SignalsStatsTypeAdapter: pydantic.TypeAdapter[SignalsStatsType] = pydantic.TypeAdapter(SignalsStatsType)

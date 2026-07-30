@@ -31,6 +31,8 @@ class EmitMethodArg(pydantic.BaseModel):
     type: str
     doc: str | None = None
     default: str | None = None
+    pydantic_model: str | None = None
+    cast: str | None = None
 
 
 class EmitMethod(pydantic.BaseModel):

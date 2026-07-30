@@ -26,8 +26,8 @@
 | `social_disable_only_watched` | `social/disable-only-watched` |     [x]     | [🔗](#social-disable-only-watched) |
 | `update_closed_expresses`     | `updateClosedExpresses`       |     [x]     |    [🔗](#updateclosedexpresses)    |
 | ``                            | `openExpress`                 |     [ ]     |         [🔗](#openexpress)         |
-| ``                            | `openPendingOrder`            |     [ ]     |      [🔗](#openpendingorder)       |
-| ``                            | `cancelPendingOrder`          |     [ ]     |     [🔗](#cancelpendingorder)      |
+| `deals_pending_open`          | `openPendingOrder`            |     [x]     |      [🔗](#openpendingorder)       |
+| `deals_pending_cancel`        | `cancelPendingOrder`          |     [x]     |     [🔗](#cancelpendingorder)      |
 
 # Assets events
 
@@ -85,7 +85,7 @@
 
 | Client name           | Event name            | Implemented |           Blink            |
 | --------------------- | --------------------- | :---------: | :------------------------: |
-| ``                    | `signals/stats`       |     [ ]     |    [🔗](#signals-stats)    |
+| `signals_stats`       | `signals/stats`       |     [x]     |    [🔗](#signals-stats)    |
 | `signals_subscribe`   | `signals/subscribe`   |     [x]     |  [🔗](#signals-subscribe)  |
 | `signals_unsubscribe` | `signals/unsubscribe` |     [x]     | [🔗](#signals-unsubscribe) |
 | ``                    | `sto`                 |     [ ]     |         [🔗](#sto)         |

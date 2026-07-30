@@ -217,6 +217,7 @@ if __name__ == "__main__":
 | `client.emit.social_enable_only_watched` | `social/enable-only-watched` | deals | Enable watched filter. |
 | `client.emit.update_closed_expresses` | `updateClosedExpresses` | deals | - |
 | `client.emit.indicator_load` | `indicator/load` | indicator | Indicates that indicator data has been loaded by the platform. |
+| `client.emit.signals_stats` | `signals/stats` | signals | - |
 | `client.emit.signals_subscribe` | `signals/subscribe` | signals | - |
 | `client.emit.signals_unsubscribe` | `signals/unsubscribe` | signals | - |
 | `client.emit.favorite_load` | `favorite/load` | ui | Indicates that favorite has been loaded by the platform. |

@@ -13,7 +13,7 @@ from pocket_option import models
 from pocket_option.client import BasePocketOptionClient
 
 if typing.TYPE_CHECKING:
-    from pocket_option.types import NoDataEventListener, TypedEventListener
+    from pocket_option.types import JsonValue, NoDataEventListener, TypedEventListener
 
 __all__ = ("PocketOptionClient",)
 
@@ -27,6 +27,7 @@ class PocketOptionClientEmit:
 
         Category: `ai`
         """
+
         await self.client.send("ai-strategy-multi/get-state")
 
     async def change_asset(self, data: models.ChangeAssetRequest) -> None:
@@ -37,6 +38,7 @@ class PocketOptionClientEmit:
         :param data: Asset change request parameters.
         :type data: models.ChangeAssetRequest
         """
+
         await self.client.send("changeSymbol", data)
 
     async def subscribe_for_market_sentiment(self, asset: models.Asset) -> None:
@@ -47,6 +49,7 @@ class PocketOptionClientEmit:
         :param asset: Trading asset for sentiment tracking.
         :type asset: models.Asset
         """
+
         await self.client.send("subfor", asset)
 
     async def subscribe_to_asset(self, asset: models.Asset) -> None:
@@ -57,6 +60,7 @@ class PocketOptionClientEmit:
         :param asset: Trading asset to subscribe.
         :type asset: models.Asset
         """
+
         await self.client.send("subscribeSymbol", asset)
 
     async def unsubscribe_for_market_sentiment(self, asset: models.Asset) -> None:
@@ -67,6 +71,7 @@ class PocketOptionClientEmit:
         :param asset: Trading asset to remove from sentiment tracking.
         :type asset: models.Asset
         """
+
         await self.client.send("unsubfor", asset)
 
     async def unsubscribe_from_asset(self, asset: models.Asset) -> None:
@@ -77,6 +82,7 @@ class PocketOptionClientEmit:
         :param asset: Trading asset to unsubscribe from.
         :type asset: models.Asset
         """
+
         await self.client.send("unSubscribeSymbol", asset)
 
     async def auth(self, data: models.AuthorizationData) -> None:
@@ -87,6 +93,7 @@ class PocketOptionClientEmit:
         :param data: Authorization payload containing session and account information.
         :type data: models.AuthorizationData
         """
+
         await self.client.send("auth", data)
 
     async def demo_refill_balance(self) -> None:
@@ -94,6 +101,7 @@ class PocketOptionClientEmit:
 
         Category: `common`
         """
+
         await self.client.send("td/refill")
 
     async def load_history_period(self, data: models.LoadHistoryPeriodRequest) -> None:
@@ -104,6 +112,7 @@ class PocketOptionClientEmit:
         :param data: Historical data request parameters.
         :type data: models.LoadHistoryPeriodRequest
         """
+
         await self.client.send("loadHistoryPeriod", data)
 
     async def ps(self) -> None:
@@ -111,6 +120,7 @@ class PocketOptionClientEmit:
 
         Category: `common`
         """
+
         await self.client.send("ps")
 
     async def update_balance(self) -> None:
@@ -118,6 +128,7 @@ class PocketOptionClientEmit:
 
         Category: `common`
         """
+
         await self.client.send("updateBalance")
 
     async def copy_signal(self, data: models.CopySignalRequest) -> None:
@@ -128,6 +139,7 @@ class PocketOptionClientEmit:
         :param data: Copy signal execution parameters.
         :type data: models.CopySignalRequest
         """
+
         await self.client.send("copySignalOrder", data)
 
     async def deals_ai(self) -> None:
@@ -135,6 +147,7 @@ class PocketOptionClientEmit:
 
         Category: `deals`
         """
+
         await self.client.send("deals/ai")
 
     async def deals_copy(self, data: models.CopyOrderRequest) -> None:
@@ -145,6 +158,7 @@ class PocketOptionClientEmit:
         :param data: None
         :type data: models.CopyOrderRequest
         """
+
         await self.client.send("copyorder", data)
 
     async def deals_double_up(self, data: models.DealsDoubleUpRequest) -> None:
@@ -155,6 +169,7 @@ class PocketOptionClientEmit:
         :param data: None
         :type data: models.DealsDoubleUpRequest
         """
+
         await self.client.send("deals/double-up", data)
 
     async def deals_open(self, data: models.OpenDealRequest) -> None:
@@ -165,6 +180,7 @@ class PocketOptionClientEmit:
         :param data: Deal opening parameters.
         :type data: models.OpenDealRequest
         """
+
         await self.client.send("openOrder", data)
 
     async def deals_pending_cancel(self, data: models.CancelPendingDealRequest) -> None:
@@ -175,6 +191,7 @@ class PocketOptionClientEmit:
         :param data: None
         :type data: models.CancelPendingDealRequest
         """
+
         await self.client.send("cancelPendingOrder", data)
 
     async def deals_pending_open(self, data: models.OpenPendingDealRequest) -> None:
@@ -185,6 +202,7 @@ class PocketOptionClientEmit:
         :param data: None
         :type data: models.OpenPendingDealRequest
         """
+
         await self.client.send("openPendingOrder", data)
 
     async def deals_rollover(self, data: models.DealsRolloverRequest) -> None:
@@ -195,6 +213,7 @@ class PocketOptionClientEmit:
         :param data: None
         :type data: models.DealsRolloverRequest
         """
+
         await self.client.send("deals/rollover", data)
 
     async def deals_update_opened(self) -> None:
@@ -202,6 +221,7 @@ class PocketOptionClientEmit:
 
         Category: `deals`
         """
+
         await self.client.send("updateOpenedDeals")
 
     async def social_disable_only_watched(self) -> None:
@@ -209,6 +229,7 @@ class PocketOptionClientEmit:
 
         Category: `deals`
         """
+
         await self.client.send("social/disable-only-watched")
 
     async def social_enable_only_watched(self) -> None:
@@ -216,6 +237,7 @@ class PocketOptionClientEmit:
 
         Category: `deals`
         """
+
         await self.client.send("social/enable-only-watched")
 
     async def update_closed_expresses(self) -> None:
@@ -223,6 +245,7 @@ class PocketOptionClientEmit:
 
         Category: `deals`
         """
+
         await self.client.send("updateClosedExpresses")
 
     async def indicator_load(self) -> None:
@@ -230,13 +253,34 @@ class PocketOptionClientEmit:
 
         Category: `indicator`
         """
+
         await self.client.send("indicator/load")
+
+    async def signals_stats(self, data: models.SignalsStatsType) -> None:
+        """No description
+
+        Category: `signals`
+
+        :param data: None
+        :type data: models.SignalsStatsType
+        """
+
+        await self.client.send(
+            "signals/stats",
+            typing.cast(
+                "JsonValue",
+                models.SignalsStatsTypeAdapter.validate_python(
+                    data,
+                ),
+            ),
+        )
 
     async def signals_subscribe(self) -> None:
         """No description
 
         Category: `signals`
         """
+
         await self.client.send("signals/subscribe")
 
     async def signals_unsubscribe(self) -> None:
@@ -244,6 +288,7 @@ class PocketOptionClientEmit:
 
         Category: `signals`
         """
+
         await self.client.send("signals/unsubscribe")
 
     async def favorite_load(self) -> None:
@@ -251,6 +296,7 @@ class PocketOptionClientEmit:
 
         Category: `ui`
         """
+
         await self.client.send("favorite/load")
 
     async def price_alert_load(self) -> None:
@@ -258,6 +304,7 @@ class PocketOptionClientEmit:
 
         Category: `ui`
         """
+
         await self.client.send("price-alert/load")
 
 

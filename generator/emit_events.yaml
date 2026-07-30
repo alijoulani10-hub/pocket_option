@@ -167,6 +167,15 @@
   category: indicator
   doc: Indicates that indicator data has been loaded by the platform.
 
+- name: signals_stats
+  event: signals/stats
+  category: signals
+  args:
+    name: data
+    type: models.SignalsStatsType
+    pydantic_model: models.SignalsStatsTypeAdapter
+    cast: JsonValue
+
 - name: signals_subscribe
   event: signals/subscribe
   category: signals
