@@ -137,6 +137,7 @@ lint.fixable = ["I", "RUF022", "UP035"]
     "PLR2004",
     "D",
 ]
+"examples/**/*.py" = ["INP001"]
 "pocket_option/generated_client.py" = ["ERA001"]
 "scripts/**/*.py" = ["ALL"]
 

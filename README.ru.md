@@ -231,34 +231,19 @@ if __name__ == "__main__":
 
 | Method | Event |  Category  | Description |
 |--------|-------|:----------:|-------------|
-| `client.on.ai_strategy_multi_get_state` | `ai-strategy-multi/get-state` | ai | Get AI strategy state. |
-| `client.on.change_asset` | `changeSymbol` | assets | Changes the active trading asset and timeframe. |
-| `client.on.subscribe_for_market_sentiment` | `subfor` | assets | Subscribes to market sentiment updates for an asset. |
-| `client.on.subscribe_to_asset` | `subscribeSymbol` | assets | Subscribes to real-time updates for a trading asset. |
-| `client.on.unsubscribe_for_market_sentiment` | `unsubfor` | assets | Removes market sentiment subscription for an asset. |
-| `client.on.unsubscribe_from_asset` | `unSubscribeSymbol` | assets | Unsubscribes from real-time updates for a trading asset. |
-| `client.on.auth` | `auth` | common | Authorizes the client session. |
-| `client.on.demo_refill_balance` | `td/refill` | common | Refill demo account balance. |
-| `client.on.load_history_period` | `loadHistoryPeriod` | common | Requests historical market data for a specific period. |
-| `client.on.ps` | `ps` | common | Sends a heartbeat request to keep the connection alive. |
-| `client.on.update_balance` | `updateBalance` | common | Request balance update. |
-| `client.on.copy_signal` | `copySignalOrder` | deals | Creates a deal from a copy trading signal. |
-| `client.on.deals_ai` | `deals/ai` | deals | AI deal operation. |
-| `client.on.deals_copy` | `copyorder` | deals | Copy existing order |
-| `client.on.deals_double_up` | `deals/double-up` | deals | Double existing deal. |
-| `client.on.deals_open` | `openOrder` | deals | Creates a new trading deal. |
-| `client.on.deals_pending_cancel` | `cancelPendingOrder` | deals | Cancel pending order. |
-| `client.on.deals_pending_open` | `openPendingOrder` | deals | Create pending order. |
-| `client.on.deals_rollover` | `deals/rollover` | deals | Rollover existing deal. |
-| `client.on.deals_update_opened` | `updateOpenedDeals` | deals | - |
-| `client.on.social_disable_only_watched` | `social/disable-only-watched` | deals | Disable watched filter. |
-| `client.on.social_enable_only_watched` | `social/enable-only-watched` | deals | Enable watched filter. |
-| `client.on.update_closed_expresses` | `updateClosedExpresses` | deals | - |
-| `client.on.indicator_load` | `indicator/load` | indicator | Indicates that indicator data has been loaded by the platform. |
-| `client.on.signals_subscribe` | `signals/subscribe` | signals | - |
-| `client.on.signals_unsubscribe` | `signals/unsubscribe` | signals | - |
-| `client.on.favorite_load` | `favorite/load` | ui | Indicates that favorite has been loaded by the platform. |
-| `client.on.price_alert_load` | `price-alert/load` | ui | Indicates that price alert data has been loaded by the platform. |
+| `client.on.assets_update` | `updateAssets` | assets | Triggered when available trading assets metadata is updated. |
+| `client.on.change_market_sentiment` | `chafor` | assets | Triggered when market sentiment data is updated. |
+| `client.on.update_close_value` | `updateStream` | assets | Triggered when real-time price stream values are updated. |
+| `client.on.update_history_new_fast` | `updateHistoryNewFast` | assets | Triggered when fast historical market data is received. |
+| `client.on.balance_success_update` | `successupdateBalance` | common | Triggered when account balance information is updated. |
+| `client.on.connect` | `connect` | common | Triggered when the Socket.IO connection is established. |
+| `client.on.disconnect` | `disconnect` | common | Triggered when the Socket.IO connection is closed. |
+| `client.on.load_history_period_fast` | `loadHistoryPeriodFast` | common | Triggered when historical market data for a specific period is loaded. |
+| `client.on.success_auth` | `successauth` | common | Triggered after successful account authorization. |
+| `client.on.deals_success_close` | `successcloseOrder` | deals | Triggered after one or more deals are successfully closed. |
+| `client.on.deals_success_open` | `successopenOrder` | deals | Triggered after a new deal is successfully opened. |
+| `client.on.deals_update_closed` | `updateClosedDeals` | deals | Triggered when closed deals information is updated. |
+| `client.on.deals_update_opened` | `updateOpenedDeals` | deals | Triggered when the list of opened deals is updated. |
 
 <!-- END_AVAILABLE_ON_EVENTS -->
 

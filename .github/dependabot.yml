@@ -8,7 +8,7 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "06:00"
-      timezone: "UTC"
+      timezone: "Europe/Moscow"
 
     open-pull-requests-limit: 10
 
@@ -18,9 +18,6 @@ updates:
     commit-message:
       prefix: "deps"
       include: "scope"
-
-    reviewers:
-      - "lordralinc"
 
     groups:
       production:
@@ -52,13 +49,10 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "06:15"
-      timezone: "UTC"
+      timezone: "Europe/Moscow"
 
     labels:
       - "dependencies"
 
     commit-message:
       prefix: "ci"
-
-    reviewers:
-      - "lordralinc"

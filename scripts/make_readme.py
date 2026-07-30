@@ -4,6 +4,7 @@ import yaml
 
 readme_paths = (pathlib.Path("README.md"), pathlib.Path("README.ru.md"))
 emit_path = pathlib.Path("generator", "emit_events.yaml")
+on_path = pathlib.Path("generator", "on_events.yaml")
 
 START_EMIT = "<!-- START_AVAILABLE_EMIT_EVENTS -->"
 END_EMIT = "<!-- END_AVAILABLE_EMIT_EVENTS -->"
@@ -40,7 +41,7 @@ def update_readme(path: pathlib.Path, data: list[dict], tags: tuple[str, str], p
 
 if __name__ == "__main__":
     emit_data = yaml.safe_load(emit_path.read_text())
-    on_data = yaml.safe_load(emit_path.read_text())
+    on_data = yaml.safe_load(on_path.read_text())
     for path in readme_paths:
         update_readme(path, emit_data, (START_EMIT, END_EMIT), pre_tag="client.emit")
         update_readme(path, on_data, (START_ON, END_ON), pre_tag="client.on")

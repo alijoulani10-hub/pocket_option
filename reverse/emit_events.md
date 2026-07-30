@@ -686,7 +686,6 @@ Create pending order.
 
 ### Payload
 
-
 ```jsonl
 // ко времени
 ["openPendingOrder",{"openType":0,"amount":10,"asset":"EURUSD_otc","openTime":"2026-07-26 15:28:07","openPrice":0,"timeframe":60,"minPayout":60,"command":0}]
@@ -698,6 +697,7 @@ Create pending order.
 
 ["openPendingOrder",{"openType":1,"amount":10,"asset":"EURUSD_otc","openTime":"2026-07-26 15:28:07","openPrice":1.13183,"timeframe":60,"minPayout":60,"command":1}]
 ```
+
 ---
 
 <h2 id="cancelpendingorder"><code>cancelPendingOrder</code></h2>
