@@ -25,6 +25,9 @@ __all__ = (
     "OpenDealRequest",
     "OpenPendingDealRequest",
     "OpenPendingDealRequestOpenType",
+    "PriceAlertAddRequest",
+    "PriceAlertAddedEvent",
+    "PriceAlertRemoveRequest",
     "SignalsStatsType",
     "SignalsStatsTypeAdapter",
     "SuccessAuthEvent",
@@ -249,7 +252,7 @@ class AuthorizationData(BaseRequest):
 
 
 class SuccessAuthEvent(BaseEvent):
-    id: str
+    id: typing.Annotated[str | None, pydantic.Field(None)]
 
 
 class SuccessUpdateBalanceEvent(BaseEvent):
@@ -768,3 +771,18 @@ class CancelPendingDealRequest(BaseRequest):
 
 type SignalsStatsType = list[tuple[int, list[tuple[Asset, int]]]]
 SignalsStatsTypeAdapter: pydantic.TypeAdapter[SignalsStatsType] = pydantic.TypeAdapter(SignalsStatsType)
+
+
+class PriceAlertAddRequest(BaseRequest):
+    price: float
+    asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
+
+
+class PriceAlertRemoveRequest(BaseRequest):
+    id: int
+
+
+class PriceAlertAddedEvent(BaseEvent):
+    id: int
+    price: float
+    asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]

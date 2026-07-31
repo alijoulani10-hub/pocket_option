@@ -221,7 +221,9 @@ if __name__ == "__main__":
 | `client.emit.signals_subscribe` | `signals/subscribe` | signals | - |
 | `client.emit.signals_unsubscribe` | `signals/unsubscribe` | signals | - |
 | `client.emit.favorite_load` | `favorite/load` | ui | Indicates that favorite has been loaded by the platform. |
+| `client.emit.price_alert_add` | `price-alert/add` | ui | - |
 | `client.emit.price_alert_load` | `price-alert/load` | ui | Indicates that price alert data has been loaded by the platform. |
+| `client.emit.price_alert_remove` | `price-alert/remove` | ui | - |
 
 <!-- END_AVAILABLE_EMIT_EVENTS -->
 
@@ -245,6 +247,7 @@ if __name__ == "__main__":
 | `client.on.deals_success_open` | `successopenOrder` | deals | Triggered after a new deal is successfully opened. |
 | `client.on.deals_update_closed` | `updateClosedDeals` | deals | Triggered when closed deals information is updated. |
 | `client.on.deals_update_opened` | `updateOpenedDeals` | deals | Triggered when the list of opened deals is updated. |
+| `client.on.price_alert_added` | `successprice-alert/add` | ui | - |
 
 <!-- END_AVAILABLE_ON_EVENTS -->
 

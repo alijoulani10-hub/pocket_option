@@ -26,7 +26,7 @@ API_LIMITS_RATE_LIMIT = 100
 MAX_INT_32 = 2_147_483_647
 TIMESTAMP_OFFSET = -7200
 DEFAULT_ORIGIN = "https://m.pocketoption.com"
-DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0"
 
 
 class Regions(enum.StrEnum):

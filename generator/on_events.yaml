@@ -88,3 +88,9 @@
   doc: Triggered when the list of opened deals is updated.
   pydantic_model: models.DealListTypeAdapter
   return_type: list[models.Deal]
+
+- name: price_alert_added
+  event: successprice-alert/add
+  category: ui
+  pydantic_model: models.PriceAlertAddedEvent
+  return_type: models.PriceAlertAddedEvent

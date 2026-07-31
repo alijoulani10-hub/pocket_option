@@ -73,7 +73,6 @@ def generate():
             "ruff",
             "format",
             "pocket_option/generated_client.py",
-            "--silent",
         ],
         check=True,
     )
@@ -86,7 +85,6 @@ def generate():
             "pocket_option/generated_client.py",
             "--fix",
             "--unsafe-fixes",
-            "--silent",
         ],
         check=True,
     )

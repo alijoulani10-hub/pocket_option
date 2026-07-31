@@ -299,6 +299,17 @@ class PocketOptionClientEmit:
 
         await self.client.send("favorite/load")
 
+    async def price_alert_add(self, data: models.PriceAlertAddRequest) -> None:
+        """No description
+
+        Category: `ui`
+
+        :param data: None
+        :type data: models.PriceAlertAddRequest
+        """
+
+        await self.client.send("price-alert/add", data)
+
     async def price_alert_load(self) -> None:
         """Indicates that price alert data has been loaded by the platform.
 
@@ -306,6 +317,17 @@ class PocketOptionClientEmit:
         """
 
         await self.client.send("price-alert/load")
+
+    async def price_alert_remove(self, data: models.PriceAlertRemoveRequest) -> None:
+        """No description
+
+        Category: `ui`
+
+        :param data: None
+        :type data: models.PriceAlertRemoveRequest
+        """
+
+        await self.client.send("price-alert/remove", data)
 
 
 class PocketOptionClientOn:
@@ -327,7 +349,7 @@ class PocketOptionClientOn:
     def assets_update(
         self,
         handler: "TypedEventListener[list[models.UpdateAssetItem]] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[list[models.UpdateAssetItem]]], None]":
+    ) -> "typing.Callable[[TypedEventListener[list[models.UpdateAssetItem]]], None] | None":
         """Triggered when available trading assets metadata is updated.
 
         Category: `assets`
@@ -353,7 +375,7 @@ class PocketOptionClientOn:
     def change_market_sentiment(
         self,
         handler: "TypedEventListener[list[models.MarketSentimentItem]] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[list[models.MarketSentimentItem]]], None]":
+    ) -> "typing.Callable[[TypedEventListener[list[models.MarketSentimentItem]]], None] | None":
         """Triggered when market sentiment data is updated.
 
         Category: `assets`
@@ -379,7 +401,7 @@ class PocketOptionClientOn:
     def update_close_value(
         self,
         handler: "TypedEventListener[list[models.UpdateCloseValueItem]] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[list[models.UpdateCloseValueItem]]], None]":
+    ) -> "typing.Callable[[TypedEventListener[list[models.UpdateCloseValueItem]]], None] | None":
         """Triggered when real-time price stream values are updated.
 
         Category: `assets`
@@ -405,7 +427,7 @@ class PocketOptionClientOn:
     def update_history_new_fast(
         self,
         handler: "TypedEventListener[models.UpdateHistoryFastEvent] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[models.UpdateHistoryFastEvent]], None]":
+    ) -> "typing.Callable[[TypedEventListener[models.UpdateHistoryFastEvent]], None] | None":
         """Triggered when fast historical market data is received.
 
         Category: `assets`
@@ -431,7 +453,7 @@ class PocketOptionClientOn:
     def balance_success_update(
         self,
         handler: "TypedEventListener[models.SuccessUpdateBalanceEvent] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[models.SuccessUpdateBalanceEvent]], None]":
+    ) -> "typing.Callable[[TypedEventListener[models.SuccessUpdateBalanceEvent]], None] | None":
         """Triggered when account balance information is updated.
 
         Category: `common`
@@ -457,7 +479,7 @@ class PocketOptionClientOn:
     def connect(
         self,
         handler: "NoDataEventListener | None" = None,
-    ) -> "None | typing.Callable[[NoDataEventListener], None]":
+    ) -> "typing.Callable[[NoDataEventListener], None] | None":
         """Triggered when the Socket.IO connection is established.
 
         Category: `common`
@@ -483,7 +505,7 @@ class PocketOptionClientOn:
     def disconnect(
         self,
         handler: "NoDataEventListener | None" = None,
-    ) -> "None | typing.Callable[[NoDataEventListener], None]":
+    ) -> "typing.Callable[[NoDataEventListener], None] | None":
         """Triggered when the Socket.IO connection is closed.
 
         Category: `common`
@@ -509,7 +531,7 @@ class PocketOptionClientOn:
     def load_history_period_fast(
         self,
         handler: "TypedEventListener[models.LoadHistoryPeriodFastResponse] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[models.LoadHistoryPeriodFastResponse]], None]":
+    ) -> "typing.Callable[[TypedEventListener[models.LoadHistoryPeriodFastResponse]], None] | None":
         """Triggered when historical market data for a specific period is loaded.
 
         Category: `common`
@@ -535,7 +557,7 @@ class PocketOptionClientOn:
     def success_auth(
         self,
         handler: "TypedEventListener[models.SuccessAuthEvent] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[models.SuccessAuthEvent]], None]":
+    ) -> "typing.Callable[[TypedEventListener[models.SuccessAuthEvent]], None] | None":
         """Triggered after successful account authorization.
 
         Category: `common`
@@ -561,7 +583,7 @@ class PocketOptionClientOn:
     def deals_success_close(
         self,
         handler: "TypedEventListener[models.SuccessCloseDealEvent] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[models.SuccessCloseDealEvent]], None]":
+    ) -> "typing.Callable[[TypedEventListener[models.SuccessCloseDealEvent]], None] | None":
         """Triggered after one or more deals are successfully closed.
 
         Category: `deals`
@@ -587,7 +609,7 @@ class PocketOptionClientOn:
     def deals_success_open(
         self,
         handler: "TypedEventListener[models.Deal] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[models.Deal]], None]":
+    ) -> "typing.Callable[[TypedEventListener[models.Deal]], None] | None":
         """Triggered after a new deal is successfully opened.
 
         Category: `deals`
@@ -613,7 +635,7 @@ class PocketOptionClientOn:
     def deals_update_closed(
         self,
         handler: "TypedEventListener[list[models.Deal]] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[list[models.Deal]]], None]":
+    ) -> "typing.Callable[[TypedEventListener[list[models.Deal]]], None] | None":
         """Triggered when closed deals information is updated.
 
         Category: `deals`
@@ -639,7 +661,7 @@ class PocketOptionClientOn:
     def deals_update_opened(
         self,
         handler: "TypedEventListener[list[models.Deal]] | None" = None,
-    ) -> "None | typing.Callable[[TypedEventListener[list[models.Deal]]], None]":
+    ) -> "typing.Callable[[TypedEventListener[list[models.Deal]]], None] | None":
         """Triggered when the list of opened deals is updated.
 
         Category: `deals`
@@ -649,6 +671,32 @@ class PocketOptionClientOn:
         :type handler: TypedEventListener[list[models.Deal]] | None
         """
         return self.client.add_on("updateOpenedDeals", handler=handler, model=models.DealListTypeAdapter)
+
+    @typing.overload
+    def price_alert_added(
+        self,
+        handler: None = None,
+    ) -> "typing.Callable[[TypedEventListener[models.PriceAlertAddedEvent]], None]": ...
+
+    @typing.overload
+    def price_alert_added(
+        self,
+        handler: "TypedEventListener[models.PriceAlertAddedEvent]",
+    ) -> None: ...
+
+    def price_alert_added(
+        self,
+        handler: "TypedEventListener[models.PriceAlertAddedEvent] | None" = None,
+    ) -> "typing.Callable[[TypedEventListener[models.PriceAlertAddedEvent]], None] | None":
+        """No description
+
+        Category: `ui`
+
+
+        :param handler: Callback
+        :type handler: TypedEventListener[models.PriceAlertAddedEvent] | None
+        """
+        return self.client.add_on("successprice-alert/add", handler=handler, model=models.PriceAlertAddedEvent)
 
 
 class PocketOptionClient(BasePocketOptionClient):

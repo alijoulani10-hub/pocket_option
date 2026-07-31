@@ -41,24 +41,24 @@
 
 # UI events
 
-| Client name        | Event name             | Implemented |            Blink            |
-| ------------------ | ---------------------- | :---------: | :-------------------------: |
-| ``                 | `order-chart/load`     |     [ ]     |   [🔗](#order-chart-load)   |
-| ``                 | `saveCharts`           |     [ ]     |      [🔗](#savecharts)      |
-| ``                 | `deleteChart`          |     [ ]     |     [🔗](#deletechart)      |
-| ``                 | `drawing/create`       |     [ ]     |    [🔗](#drawing-create)    |
-| ``                 | `drawing/update`       |     [ ]     |    [🔗](#drawing-update)    |
-| ``                 | `updateDrawingPoints`  |     [ ]     | [🔗](#updatedrawingpoints)  |
-| ``                 | `deleteDrawing`        |     [ ]     |    [🔗](#deletedrawing)     |
-| ``                 | `deleteDrawingIds`     |     [ ]     |   [🔗](#deletedrawingids)   |
-| ``                 | `deleteDrawings`       |     [ ]     |    [🔗](#deletedrawings)    |
-| ``                 | `lockDrawings`         |     [ ]     |     [🔗](#lockdrawings)     |
-| `favorite_load`    | `favorite/load`        |     [x]     |    [🔗](#favorite-load)     |
-| ``                 | `favorite/change`      |     [ ]     |   [🔗](#favorite-change)    |
-| `price_alert_load` | `price-alert/load`     |     [x]     |   [🔗](#price-alert-load)   |
-| ``                 | `price-alert/add`      |     [ ]     |   [🔗](#price-alert-add)    |
-| ``                 | `price-alert/remove`   |     [ ]     |  [🔗](#price-alert-remove)  |
-| ``                 | `user/change-platform` |     [ ]     | [🔗](#user-change-platform) |
+| Client name          | Event name             | Implemented |            Blink            |
+| -------------------- | ---------------------- | :---------: | :-------------------------: |
+| ``                   | `order-chart/load`     |     [ ]     |   [🔗](#order-chart-load)   |
+| ``                   | `saveCharts`           |     [ ]     |      [🔗](#savecharts)      |
+| ``                   | `deleteChart`          |     [ ]     |     [🔗](#deletechart)      |
+| ``                   | `drawing/create`       |     [ ]     |    [🔗](#drawing-create)    |
+| ``                   | `drawing/update`       |     [ ]     |    [🔗](#drawing-update)    |
+| ``                   | `updateDrawingPoints`  |     [ ]     | [🔗](#updatedrawingpoints)  |
+| ``                   | `deleteDrawing`        |     [ ]     |    [🔗](#deletedrawing)     |
+| ``                   | `deleteDrawingIds`     |     [ ]     |   [🔗](#deletedrawingids)   |
+| ``                   | `deleteDrawings`       |     [ ]     |    [🔗](#deletedrawings)    |
+| ``                   | `lockDrawings`         |     [ ]     |     [🔗](#lockdrawings)     |
+| `favorite_load`      | `favorite/load`        |     [x]     |    [🔗](#favorite-load)     |
+| ``                   | `favorite/change`      |     [ ]     |   [🔗](#favorite-change)    |
+| `price_alert_load`   | `price-alert/load`     |     [x]     |   [🔗](#price-alert-load)   |
+| `price_alert_add`    | `price-alert/add`      |     [ ]     |   [🔗](#price-alert-add)    |
+| `price_alert_remove` | `price-alert/remove`   |     [ ]     |  [🔗](#price-alert-remove)  |
+| ``                   | `user/change-platform` |     [ ]     | [🔗](#user-change-platform) |
 
 # AI events
 

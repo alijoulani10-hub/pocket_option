@@ -292,7 +292,10 @@ class MemoryCandleStorage(CandleStorage):
         :param max_len: Maximum deque size.
         :type max_len: int
         """
+        old_storage = self._storage.copy()
         self._storage = defaultdict(lambda: deque(maxlen=_max_len))
+        for key, old_deque in old_storage.items():
+            self._storage[key].extend(old_deque)
 
     async def get_first_item(self, asset: Asset) -> UpdateCloseValueItem | None:
         items = self._storage.get(asset, [])

@@ -10,6 +10,7 @@ import pydantic
 import socketio
 
 from pocket_option.constants import DEFAULT_ORIGIN, DEFAULT_USER_AGENT
+from pocket_option.errors import PocketOptionError
 from pocket_option.middlewares import FixTypesOnMiddleware, MakeJsonOnMiddleware
 from pocket_option.utils import get_function_full_name, get_json_function
 
@@ -270,6 +271,20 @@ class BasePocketOptionClient:
         """
         return self._authorized_event
 
+    async def wait_for_authorization(self, timeout: float | None = None) -> None:  # noqa: ASYNC109
+        """Wait until authorization is completed.
+
+        Raises:
+            PocketOptionError: If authorization times out.
+        """
+        try:
+            await asyncio.wait_for(self.authorized_event.wait(), timeout)
+        except TimeoutError as exc:
+            raise PocketOptionError(
+                "authorization_timeout",
+                "Authorization timeout reached",
+            ) from exc
+
     def get_auth_from_packet(self, packet: str) -> models.AuthorizationData:
         packet = packet.removeprefix("42")
         json_packet = self.json.loads(packet)
@@ -498,6 +513,7 @@ class BasePocketOptionClient:
         event: str,
         data: JsonValue | pydantic.BaseModel | None = None,
         callback: EmitCallback[JsonValue] | None = None,
+        type_adapter: pydantic.TypeAdapter | None = None,
     ) -> None:
         """
         Emit event to PocketOption server.
@@ -520,6 +536,8 @@ class BasePocketOptionClient:
         """
         if event == "auth":
             self.authorization_data = typing.cast("models.AuthorizationData", data)
+        if type_adapter is not None:
+            data = type_adapter.dump_python(data, mode="json")
         if isinstance(data, pydantic.BaseModel):
             data = data.model_dump(mode="json", by_alias=True)
         if isinstance(data, list):

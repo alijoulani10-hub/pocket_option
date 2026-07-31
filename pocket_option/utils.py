@@ -93,10 +93,18 @@ class Q:
         return Q(lambda obj: not self(obj))
 
     @classmethod
-    def field(
+    def field(  # noqa: PLR0911
         cls,
         name: str,
-        op: str,
+        op: typing.Literal[
+            "eq",
+            "neq",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "isnull",
+        ],
         value: typing.Any,
     ) -> typing.Self:
         """
@@ -118,13 +126,15 @@ class Q:
             )
 
         Supported operators:
-
-            - eq
-            - gt
-            - gte
-            - lt
-            - lte
-            - isnull
+            ```
+            - eq        equal                   =
+            - neq       not equal               !=
+            - gt        greater than            >
+            - gte       greater than or equal   >=
+            - lt        less than               <
+            - lte       less than or equal      <=
+            - isnull    is null                 v is None
+            ```
 
         :param name: Object attribute name.
         :type name: str
@@ -150,7 +160,8 @@ class Q:
         match op:
             case "eq":
                 return cls(lambda obj: getter(obj) == value)
-
+            case "neq":
+                return cls(lambda obj: getter(obj) != value)
             case "gt":
                 return cls(lambda obj: getter(obj) > value)
 
@@ -170,7 +181,14 @@ class Q:
                 raise ValueError(op)
 
 
+@typing.runtime_checkable
+class _FnClsWithPretty(typing.Protocol):
+    __pretty_name__: str
+
+
 def get_function_full_name(fn: typing.Callable) -> str:
+    if isinstance(fn, _FnClsWithPretty):
+        return fn.__pretty_name__
     if inspect.isclass(fn):
         return fn.__name__ + ".__init__"
     if fn.__module__:

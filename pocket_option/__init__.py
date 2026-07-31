@@ -1,41 +1,15 @@
 from __future__ import annotations
 
-from . import constants
+from . import constants, contrib, models, types, utils
 from .generated_client import PocketOptionClient
-from .models import (
-    Asset,
-    AuthorizationData,
-    ChangeAssetRequest,
-    Command,
-    CopySignalRequest,
-    Deal,
-    DealAction,
-    IsDemo,
-    OpenDealRequest,
-    OpenPendingDealRequest,
-    OpenPendingDealRequestOpenType,
-    SuccessUpdateBalanceEvent,
-    UpdateCloseValueItem,
-    UpdateCloseValueListTypeAdapter,
-    UpdateHistoryFastEvent,
-)
+from .middleware import Middleware
 
 __all__ = (
-    "Asset",
-    "AuthorizationData",
-    "ChangeAssetRequest",
-    "Command",
-    "CopySignalRequest",
-    "Deal",
-    "DealAction",
-    "IsDemo",
-    "OpenDealRequest",
-    "OpenPendingDealRequest",
-    "OpenPendingDealRequestOpenType",
+    "Middleware",
     "PocketOptionClient",
-    "SuccessUpdateBalanceEvent",
-    "UpdateCloseValueItem",
-    "UpdateCloseValueListTypeAdapter",
-    "UpdateHistoryFastEvent",
     "constants",
+    "contrib",
+    "models",
+    "types",
+    "utils",
 )

@@ -189,7 +189,21 @@
   category: ui
   doc: Indicates that favorite has been loaded by the platform.
 
+- name: price_alert_add
+  event: price-alert/add
+  category: ui
+  args:
+    name: data
+    type: models.PriceAlertAddRequest
+
 - name: price_alert_load
   event: price-alert/load
   category: ui
   doc: Indicates that price alert data has been loaded by the platform.
+
+- name: price_alert_remove
+  event: price-alert/remove
+  category: ui
+  args:
+    name: data
+    type: models.PriceAlertRemoveRequest
