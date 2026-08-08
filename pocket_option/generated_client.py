@@ -248,6 +248,17 @@ class PocketOptionClientEmit:
 
         await self.client.send("updateClosedExpresses")
 
+    async def indicator_create(self, data: models.IndicatorCreateRequest) -> None:
+        """No description
+
+        Category: `indicator`
+
+        :param data: None
+        :type data: models.IndicatorCreateRequest
+        """
+
+        await self.client.send("indicator/create", data)
+
     async def indicator_load(self) -> None:
         """Indicates that indicator data has been loaded by the platform.
 

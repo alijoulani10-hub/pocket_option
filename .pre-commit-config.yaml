@@ -9,6 +9,12 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: sort_models
+        name: Generate emit table on readme
+        entry: poetry run python scripts/sort_models.py
+        language: system
+        pass_filenames: false
+
       - id: generate
         name: Generate files
         entry: poetry run python generator/generate.py
@@ -20,6 +26,7 @@ repos:
         entry: poetry run python scripts/make_readme.py
         language: system
         pass_filenames: false
+
 
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

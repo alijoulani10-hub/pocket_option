@@ -18,7 +18,15 @@ if typing.TYPE_CHECKING:
 
     from pocket_option.types import JsonFunction, JsonValue
 
-__all__ = ("Q", "append_or_replace", "fix_timestamp", "generate_index", "generate_request_id", "get_json_function")
+__all__ = (
+    "Q",
+    "append_or_replace",
+    "fix_timestamp",
+    "generate_index",
+    "generate_request_id",
+    "get_json_function",
+    "set_pretty_name",
+)
 
 rnd = random.SystemRandom()
 
@@ -186,6 +194,11 @@ class Q:
 @typing.runtime_checkable
 class _FnClsWithPretty(typing.Protocol):
     __pretty_name__: str
+
+
+def set_pretty_name[T](item: T, name: str) -> T:
+    item.__pretty_name__ = name  # type: ignore
+    return item
 
 
 def get_function_full_name(fn: typing.Callable) -> str:

@@ -7,6 +7,7 @@ from pocket_option.contrib.candles import CandleStorage, MemoryCandleStorage
 from pocket_option.contrib.deals import DealsStorage, MemoryDealsStorage
 from pocket_option.generated_client import PocketOptionClient
 from pocket_option.models import Asset, AuthorizationData, ChangeAssetRequest, SuccessAuthEvent
+from pocket_option.utils import set_pretty_name
 
 __all__ = ("default_init",)
 
@@ -76,24 +77,33 @@ def default_init(
     stop_event = asyncio.Event()
 
     client.on.connect(
-        functools.partial(
-            on_connect,
-            client=client,
-            stop_event=stop_event,
-            authorization=authorization,
-        ),
+        set_pretty_name(
+            functools.partial(
+                on_connect,
+                client=client,
+                stop_event=stop_event,
+                authorization=authorization,
+            ),
+            "default_init.on_connect",
+        )
     )
     client.on.success_auth(
-        functools.partial(
-            on_success_auth,
-            client=client,
-            sub_assets=sub_assets,
-            sub_period=sub_period,
-        ),
+        set_pretty_name(
+            functools.partial(
+                on_success_auth,
+                client=client,
+                sub_assets=sub_assets,
+                sub_period=sub_period,
+            ),
+            "default_init.on_success_auth",
+        )
     )
     client.on.disconnect(
-        functools.partial(
-            on_disconnect,
-            stop_event=stop_event,
-        ),
+        set_pretty_name(
+            functools.partial(
+                on_disconnect,
+                stop_event=stop_event,
+            ),
+            "default_init.on_disconnect",
+        )
     )

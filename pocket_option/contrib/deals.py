@@ -133,7 +133,7 @@ class DealsStorage:
         :param check_limits: Check API limits before opening
         :type check_limits: bool
 
-        :raises DealError: If deal cannot be opened
+        :raises DealError:
 
         :return: Opened deal
         :rtype: Deal
@@ -272,7 +272,7 @@ class DealsStorage:
         :param deal: Existing deal object
         :type deal: Deal | None
 
-        :raises TimeoutError: If waiting timeout exceeded
+        :raises DealError:
 
         :return: Closed deal
         :rtype: Deal
@@ -285,11 +285,25 @@ class DealsStorage:
         try:
             await asyncio.wait_for(self._close_deal_events[deal.id].wait(), wait_time)
         except TimeoutError as err:
-            raise TimeoutError(f"Timeout waiting for deal {deal.id}") from err
+            raise DealError(
+                "timeout",
+                f"Timeout waiting for deal {deal.id}",
+            ).with_extras(
+                request_id=request_id,
+                deal_id=deal_id,
+                deal=deal,
+            ) from err
 
         if deal := await self.get_deal(deal_id=deal.id):
             return deal
-        raise RuntimeError("Failed to find deal")
+        raise DealError(
+            "not_found",
+            "Failed to find deal",
+        ).with_extras(
+            request_id=request_id,
+            deal_id=deal_id,
+            deal=deal,
+        )
 
     async def _on_success_open_deal(self, deal: Deal):
         await self.add_or_update_deal(deal)

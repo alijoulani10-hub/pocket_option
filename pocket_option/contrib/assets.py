@@ -16,7 +16,10 @@ if typing.TYPE_CHECKING:
     from pocket_option.models import Asset
     from pocket_option.utils import Q
 
-__all__ = ("AssetsStorage",)
+__all__ = (
+    "AssetsStorage",
+    "MemoryAssetsStorage",
+)
 
 
 class AssetsStorage(abc.ABC):
@@ -92,9 +95,10 @@ class MemoryAssetsStorage(AssetsStorage):
 class JSONAssetsStorage(MemoryAssetsStorage):
     TYPE_ADAPTER = pydantic.TypeAdapter(dict[int, UpdateAssetItem])
 
-    def __init__(self, client: PocketOptionClient):
+    def __init__(self, client: PocketOptionClient, *, save_path: pathlib.Path | None = None):
         super().__init__(client)
-        self.path = pathlib.Path("reverse", "assets.json")
+        self.path = save_path or pathlib.Path("reverse", "assets.json")
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         if os.environ.get("PO_DEBUG") != "1":
             warnings.warn(
                 "JSONAssetsStorage is intended for development/testing only. Do not use it in production.",
@@ -103,7 +107,6 @@ class JSONAssetsStorage(MemoryAssetsStorage):
             )
 
     def save(self):
-        self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_bytes(self.TYPE_ADAPTER.dump_json(self._storage, indent=2))
 
     async def add_asset(self, item: UpdateAssetItem):

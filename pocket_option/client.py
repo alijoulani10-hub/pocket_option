@@ -277,8 +277,7 @@ class BasePocketOptionClient:
     async def wait_for_authorization(self, timeout: float | None = None) -> None:  # noqa: ASYNC109
         """Wait until authorization is completed.
 
-        Raises:
-            PocketOptionError: If authorization times out.
+        :raises PocketOptionError: : If authorization times out.
         """
         try:
             await asyncio.wait_for(self.authorized_event.wait(), timeout)

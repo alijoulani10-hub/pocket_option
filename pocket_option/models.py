@@ -49,13 +49,18 @@ rnd = random.SystemRandom()
 type IntBool = typing.Literal[0, 1]
 
 
-class BaseModel(pydantic.BaseModel): ...
+class BaseModel(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(populate_by_name=True)
 
 
 class BaseRequest(BaseModel): ...
 
 
 class BaseEvent(BaseModel): ...
+
+
+def generate_request_id() -> str:
+    return "".join(rnd.choice(string.ascii_letters + string.digits + "_-") for _ in range(21))
 
 
 class Asset(enum.StrEnum):
@@ -230,6 +235,31 @@ class Asset(enum.StrEnum):
         return core_schema.no_info_after_validator_function(cls, core_schema.str_schema())
 
 
+class AssetItemTimeframe(BaseEvent):
+    """
+    Asset timeframe configuration.
+
+    :ivar time:
+        Available timeframe value.
+    """
+
+    time: int
+
+
+class AssetType(enum.StrEnum):
+    """
+    Trading asset category.
+
+    Defines a group of supported financial instruments.
+    """
+
+    STOCK = "stock"
+    COMMODITY = "commodity"
+    CURRENCY = "currency"
+    CRYPTOCURRENCY = "cryptocurrency"
+    INDEX = "index"
+
+
 class AuthorizationData(BaseRequest):
     """
     PocketOption authorization payload.
@@ -258,92 +288,93 @@ class AuthorizationData(BaseRequest):
     ]
 
 
-class SuccessAuthEvent(BaseEvent):
-    id: typing.Annotated[str | None, pydantic.Field(None)]
+class CancelPendingDealRequest(BaseRequest):
+    ticket: uuid.UUID
 
 
-class SuccessUpdateBalanceEvent(BaseEvent):
+class ChangeAssetRequest(BaseRequest):
     """
-    Balance update event.
+    Request model for changing active trading asset subscription.
 
-    Represents a successful balance synchronization event received
-    from PocketOption after account balance changes or balance request.
-
-    The event contains the account type and current account balance.
-
-    :ivar is_demo:
-        Account type for which the balance was updated.
-
-    :ivar balance:
-        Current account balance value.
-    """
-
-    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
-    balance: float
-
-
-class UpdateHistoryFastEvent(BaseEvent):
-    """
-    Fast history update event.
-
-    Represents a historical candle data update received from
-    PocketOption using the fast history endpoint.
-
-    The event contains the target asset, requested timeframe and
-    raw historical price data.
-
-    The ``history`` field contains serialized candle information
-    as a list of numeric arrays. The exact array structure depends
-    on PocketOption API response format.
-
-
-    :ivar asset:
-        Trading asset associated with historical data.
-
-    :ivar period:
-        Candle timeframe in seconds.
-
-    :ivar history:
-        Raw historical candle data returned by PocketOption API.
-
-        Each item contains numeric values representing candle data.
+    :ivar asset: Trading asset to subscribe.
+    :ivar period: Market update period.
     """
 
     asset: Asset
     period: int
-    history: list[list[float]]
-
-
-class UpdateCloseValueItem(BaseEvent):
-    """
-    Close value update item.
-
-    Represents a single price update received from PocketOption.
-
-    This model is used for real-time price stream updates and contains
-    the asset identifier, event timestamp and current price value.
-
-    :ivar asset: Trading asset associated with the update.
-    :ivar timestamp: Unix timestamp of the price update.
-    :ivar value: Current asset price value.
-    """
-
-    asset: Asset
-    timestamp: float
-    value: float
-
-
-UpdateCloseValueListTypeAdapter = pydantic.TypeAdapter(list[UpdateCloseValueItem])
-
-
-class OpenPendingDealRequestOpenType(enum.IntEnum):
-    TIME = 0
-    PRICE = 1
 
 
 class Command(enum.IntEnum):
     CALL = 0
     PUT = 1
+
+    @property
+    def as_deal_action(self) -> "DealAction":
+        return DealAction.CALL if self == Command.CALL else DealAction.PUT
+
+
+class CopyOrderRequest(BaseRequest):
+    """
+    Request to copy an existing order.
+
+    :ivar ticket:    Deal ID to copy.
+    """
+
+    ticket: typing.Annotated[uuid.UUID, pydantic.Field(alias="copyTicket")]
+
+
+class CopySignalRequest(BaseRequest):
+    """
+    Request model for copy trading signal execution.
+
+    Contains signal metadata and trading parameters required
+    to replicate a trading action.
+
+    :ivar symbol:
+        Trading asset associated with the signal.
+
+    :ivar amount:
+        Investment amount.
+
+    :ivar expired_at:
+        Signal expiration timestamp.
+
+    :ivar action:
+        Trading action direction.
+
+    :ivar is_demo:
+        Account type used for execution.
+
+    :ivar request_id:
+        Client request identifier.
+
+    :ivar created_at:
+        Signal creation timestamp.
+
+    :ivar timeframe:
+        Signal timeframe.
+
+    :ivar signal_id:
+        Identifier of the source signal.
+    """
+
+    symbol: Asset
+    amount: int
+    expired_at: typing.Annotated[int, pydantic.Field(..., alias="expiredAt")]
+    action: "DealAction"
+    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
+    request_id: typing.Annotated[int, pydantic.Field(..., alias="requestId")]
+    created_at: typing.Annotated[int, pydantic.Field(..., alias="createdAt")]
+    timeframe: int
+    signal_id: typing.Annotated[str, pydantic.Field(..., alias="signalId")]
+
+
+class CreateIndicatorRequest(BaseRequest):
+    request_id: typing.Annotated[str, pydantic.Field(generate_request_id, alias="requestId")]
+    chart_id: typing.Annotated[str, pydantic.Field(alias="chartId")]
+    type: "IndicatorType"
+    settings: pydantic.JsonValue
+    visible: IntBool
 
 
 class Deal(BaseEvent):
@@ -363,7 +394,6 @@ class Deal(BaseEvent):
 
     A deal is created after successful order execution and is updated
     when the position is closed.
-
 
     :ivar id: Unique deal identifier.
     :ivar command: Trading command/action.
@@ -432,12 +462,192 @@ class Deal(BaseEvent):
         return self.close_timestamp is not None
 
 
-DealListTypeAdapter = pydantic.TypeAdapter(list[Deal])
-
-
 class DealAction(enum.StrEnum):
     CALL = "call"
     PUT = "put"
+
+    @property
+    def as_command(self) -> Command:
+        return Command.CALL if self == DealAction.CALL else Command.PUT
+
+
+DealListTypeAdapter = pydantic.TypeAdapter(list[Deal])
+
+
+class DealsDoubleUpRequest(BaseRequest):
+    """
+    Request to double up an existing order.
+
+    :ivar ticket:    Deal ID to double up.
+    """
+
+    ticket: uuid.UUID
+
+
+class DealsRolloverRequest(BaseRequest):
+    ticket: uuid.UUID
+    amount: float
+
+
+class IndicatorCreateRequest(BaseRequest):
+    """
+    Create a new indicator on the chart.
+
+    :ivar request_id:   Unique identifier of the request.
+    :ivar chart_id:     Identifier of the chart where the indicator will be created.
+    :ivar type:         Type of the indicator to create.
+    :ivar settings:     Indicator-specific configuration and parameters.
+    :ivar visible:      Whether the indicator should be visible on the chart.
+    """
+
+    request_id: typing.Annotated[str, pydantic.Field(generate_request_id, alias="requestId")]
+    chart_id: typing.Annotated[str, pydantic.Field(alias="chartId")]
+    type: "IndicatorType"
+    settings: "IndicatorCreateRequestSettingsType"
+    visible: IntBool
+
+
+class IndicatorCreateRequestAcceleratorOscillatorSettings(BaseModel):
+    """
+    Accelerator Oscillator indicator settings.
+
+    :ivar lines: Display settings for the indicator lines.
+    :ivar ao_period_short: Short period used to calculate the AO.
+    :ivar ao_period_long: Long period used to calculate the AO.
+    :ivar ac_period: SMA period used to calculate the AC.
+    """
+
+    lines: "IndicatorCreateRequestAcceleratorOscillatorSettingsLines"
+    ao_period_short: int = pydantic.Field(alias="aoPeriodShort")
+    ao_period_long: int = pydantic.Field(alias="aoPeriodLong")
+    ac_period: int = pydantic.Field(alias="acPeriod")
+
+
+class IndicatorCreateRequestAcceleratorOscillatorSettingsColor(BaseModel):
+    color: str
+
+
+class IndicatorCreateRequestAcceleratorOscillatorSettingsColors(BaseModel):
+    up: "IndicatorCreateRequestAcceleratorOscillatorSettingsColor"
+    down: "IndicatorCreateRequestAcceleratorOscillatorSettingsColor"
+
+
+class IndicatorCreateRequestAcceleratorOscillatorSettingsLine(BaseModel):
+    opacity: int
+    colors: "IndicatorCreateRequestAcceleratorOscillatorSettingsColors"
+
+
+class IndicatorCreateRequestAcceleratorOscillatorSettingsLines(BaseModel):
+    main: "IndicatorCreateRequestAcceleratorOscillatorSettingsLine"
+
+
+class IndicatorType(enum.StrEnum):
+    ACCELERATOR_OSCILLATOR = "ac"
+    AWESOME_OSCILLATOR = "ao"
+    MACD = "macd"
+    RSI = "rsi"
+    STOCHASTIC_OSCILLATOR = "so"
+    ADX = "adx"
+    RATE_OF_CHANGE = "roc"
+    AROON = "aro"
+    CCI = "cci"
+    DEMARKER = "dem"
+    ADX_SMOOTHING = "adx_smoothing"
+    DI_LENGTH = "di_length"
+    WILLIAMS_R = "will"
+    BULLS_POWER = "bup"
+    BEARS_POWER = "bep"
+    MOMENTUM = "mom"
+    VORTEX = "vor"
+    MOVING_AVERAGE = "ma"
+    BOLLINGER_BANDS = "bb"
+    DONCHIAN_CHANNELS = "dc"
+    BOLLINGER_BANDS_WIDTH = "bbw"
+    ALLIGATOR = "all"
+    FRACTAL = "fra"
+    FRACTAL_CHAOS_BANDS = "fcb"
+    PARABOLIC_SAR = "sar"
+    ZIG_ZAG = "zz"
+    ENVELOPES = "env"
+    ICHIMOKU_KINKO_HYO = "icc"
+    KELTNER_CHANNEL = "kch"
+    SUPER_TREND = "sut"
+    OSMA = "osma"
+    AVERAGE_TRUE_RANGE = "atr"
+
+
+class LoadHistoryPeriodFastResponse(BaseEvent):
+    """
+    Response containing historical candlestick data.
+
+    :ivar asset:    Trading asset.
+    :ivar index:
+    :ivar period:   Candle timeframe in seconds.
+    :ivar data:     List of historical candlesticks.
+    """
+
+    asset: Asset
+    index: int | None
+    period: int
+    data: "list[LoadHistoryPeriodItem]"
+
+
+class LoadHistoryPeriodItem(BaseEvent):
+    """
+    Historical candlestick (OHLCV) data.
+
+    :ivar symbol_id:
+    :ivar time:     Candle opening time as a Unix timestamp in seconds.
+    :ivar open:     Opening price.
+    :ivar close:    Closing price.
+    :ivar high:     Highest price during the candle.
+    :ivar low:      Lowest price during the candle.
+    :ivar volume:   Tick volume for the candle.
+    """
+
+    symbol_id: int
+    time: int
+    open: float
+    close: float
+    high: float
+    low: float
+    volume: int
+
+
+class LoadHistoryPeriodRequest(BaseRequest):
+    """
+    Request historical candlestick data for a specific time range.
+
+    :ivar asset: Trading asset.
+    :ivar index:
+    :ivar time: Timestamp.
+    :ivar offset:
+    :ivar period: Candle timeframe in seconds
+    """
+
+    asset: Asset
+    index: int | None
+    time: float
+    offset: int
+    period: int
+
+
+class MarketSentimentItem(BaseEvent):
+    """
+    Market sentiment data model.
+
+    :ivar asset:
+        Trading asset.
+
+    :ivar value:
+        Sentiment value.
+    """
+
+    asset: Asset
+    value: int
+
+
+MarketSentimentItemListTypeAdapter = pydantic.TypeAdapter(list[MarketSentimentItem])
 
 
 class OpenDealRequest(BaseRequest):
@@ -473,57 +683,11 @@ class OpenDealRequest(BaseRequest):
 
     asset: Asset
     amount: int
-    action: DealAction
+    action: "DealAction"
     is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
     request_id: typing.Annotated[int, pydantic.Field(..., alias="requestId")]
     option_type: typing.Annotated[int, pydantic.Field(..., alias="optionType")]
     time: int
-
-
-class CopySignalRequest(BaseRequest):
-    """
-    Request model for copy trading signal execution.
-
-    Contains signal metadata and trading parameters required
-    to replicate a trading action.
-
-    :ivar symbol:
-        Trading asset associated with the signal.
-
-    :ivar amount:
-        Investment amount.
-
-    :ivar expired_at:
-        Signal expiration timestamp.
-
-    :ivar action:
-        Trading action direction.
-
-    :ivar is_demo:
-        Account type used for execution.
-
-    :ivar request_id:
-        Client request identifier.
-
-    :ivar created_at:
-        Signal creation timestamp.
-
-    :ivar timeframe:
-        Signal timeframe.
-
-    :ivar signal_id:
-        Identifier of the source signal.
-    """
-
-    symbol: Asset
-    amount: int
-    expired_at: typing.Annotated[int, pydantic.Field(..., alias="expiredAt")]
-    action: DealAction
-    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
-    request_id: typing.Annotated[int, pydantic.Field(..., alias="requestId")]
-    created_at: typing.Annotated[int, pydantic.Field(..., alias="createdAt")]
-    timeframe: int
-    signal_id: typing.Annotated[str, pydantic.Field(..., alias="signalId")]
 
 
 class OpenPendingDealRequest(BaseRequest):
@@ -557,7 +721,7 @@ class OpenPendingDealRequest(BaseRequest):
         Trading command.
     """
 
-    open_type: typing.Annotated[OpenPendingDealRequestOpenType, pydantic.Field(..., alias="openType")]
+    open_type: typing.Annotated["OpenPendingDealRequestOpenType", pydantic.Field(..., alias="openType")]
     amount: int
     asset: Asset
     open_time: typing.Annotated[str, pydantic.Field(..., alias="openTime")]
@@ -567,16 +731,28 @@ class OpenPendingDealRequest(BaseRequest):
     command: Command
 
 
-class ChangeAssetRequest(BaseRequest):
-    """
-    Request model for changing active trading asset subscription.
+class OpenPendingDealRequestOpenType(enum.IntEnum):
+    TIME = 0
+    PRICE = 1
 
-    :ivar asset: Trading asset to subscribe.
-    :ivar period: Market update period.
-    """
 
-    asset: Asset
-    period: int
+class PriceAlertAddRequest(BaseRequest):
+    price: float
+    asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
+
+
+class PriceAlertAddedEvent(BaseEvent):
+    id: int
+    price: float
+    asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
+
+
+class PriceAlertRemoveRequest(BaseRequest):
+    id: int
+
+
+class SuccessAuthEvent(BaseEvent):
+    id: typing.Annotated[str | None, pydantic.Field(None)]
 
 
 class SuccessCloseDealEvent(BaseEvent):
@@ -584,29 +760,24 @@ class SuccessCloseDealEvent(BaseEvent):
     deals: list[Deal]
 
 
-class AssetType(enum.StrEnum):
+class SuccessUpdateBalanceEvent(BaseEvent):
     """
-    Trading asset category.
+    Balance update event.
 
-    Defines a group of supported financial instruments.
-    """
+    Represents a successful balance synchronization event received
+    from PocketOption after account balance changes or balance request.
 
-    STOCK = "stock"
-    COMMODITY = "commodity"
-    CURRENCY = "currency"
-    CRYPTOCURRENCY = "cryptocurrency"
-    INDEX = "index"
+    The event contains the account type and current account balance.
 
+    :ivar is_demo:
+        Account type for which the balance was updated.
 
-class AssetItemTimeframe(BaseEvent):
-    """
-    Asset timeframe configuration.
-
-    :ivar time:
-        Available timeframe value.
+    :ivar balance:
+        Current account balance value.
     """
 
-    time: int
+    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
+    balance: float
 
 
 class UpdateAssetItem(BaseEvent):
@@ -673,170 +844,61 @@ class UpdateAssetItem(BaseEvent):
 UpdateAssetItemListTypeAdapter = pydantic.TypeAdapter(list[UpdateAssetItem])
 
 
-class MarketSentimentItem(BaseEvent):
+class UpdateCloseValueItem(BaseEvent):
     """
-    Market sentiment data model.
+    Close value update item.
+
+    Represents a single price update received from PocketOption.
+
+    This model is used for real-time price stream updates and contains
+    the asset identifier, event timestamp and current price value.
+
+    :ivar asset: Trading asset associated with the update.
+    :ivar timestamp: Unix timestamp of the price update.
+    :ivar value: Current asset price value.
+    """
+
+    asset: Asset
+    timestamp: float
+    value: float
+
+
+UpdateCloseValueListTypeAdapter = pydantic.TypeAdapter(list[UpdateCloseValueItem])
+
+
+class UpdateHistoryFastEvent(BaseEvent):
+    """
+    Fast history update event.
+
+    Represents a historical candle data update received from
+    PocketOption using the fast history endpoint.
+
+    The event contains the target asset, requested timeframe and
+    raw historical price data.
+
+    The ``history`` field contains serialized candle information
+    as a list of numeric arrays. The exact array structure depends
+    on PocketOption API response format.
 
     :ivar asset:
-        Trading asset.
+        Trading asset associated with historical data.
 
-    :ivar value:
-        Sentiment value.
+    :ivar period:
+        Candle timeframe in seconds.
+
+    :ivar history:
+        Raw historical candle data returned by PocketOption API.
+
+        Each item contains numeric values representing candle data.
     """
 
     asset: Asset
-    value: int
-
-
-MarketSentimentItemListTypeAdapter = pydantic.TypeAdapter(list[MarketSentimentItem])
-
-
-class LoadHistoryPeriodRequest(BaseRequest):
-    """
-    Request historical candlestick data for a specific time range.
-
-    :ivar asset: Trading asset.
-    :ivar index:
-    :ivar time: Timestamp.
-    :ivar offset:
-    :ivar period: Candle timeframe in seconds
-    """
-
-    asset: Asset
-    index: int | None
-    time: float
-    offset: int
     period: int
+    history: list[list[float]]
 
 
-class LoadHistoryPeriodItem(BaseEvent):
-    """
-    Historical candlestick (OHLCV) data.
-
-    :ivar symbol_id:
-    :ivar time:     Candle opening time as a Unix timestamp in seconds.
-    :ivar open:     Opening price.
-    :ivar close:    Closing price.
-    :ivar high:     Highest price during the candle.
-    :ivar low:      Lowest price during the candle.
-    :ivar volume:   Tick volume for the candle.
-    """
-
-    symbol_id: int
-    time: int
-    open: float
-    close: float
-    high: float
-    low: float
-    volume: int
-
-
-class LoadHistoryPeriodFastResponse(BaseEvent):
-    """
-    Response containing historical candlestick data.
-
-    :ivar asset:    Trading asset.
-    :ivar index:
-    :ivar period:   Candle timeframe in seconds.
-    :ivar data:     List of historical candlesticks.
-    """
-
-    asset: Asset
-    index: int | None
-    period: int
-    data: list[LoadHistoryPeriodItem]
-
-
-class CopyOrderRequest(BaseRequest):
-    """
-    Request to copy an existing order.
-
-    :ivar ticket:    Deal ID to copy.
-    """
-
-    ticket: typing.Annotated[uuid.UUID, pydantic.Field(alias="copyTicket")]
-
-
-class DealsDoubleUpRequest(BaseRequest):
-    """
-    Request to double up an existing order.
-
-    :ivar ticket:    Deal ID to double up.
-    """
-
-    ticket: uuid.UUID
-
-
-class DealsRolloverRequest(BaseRequest):
-    ticket: uuid.UUID
-    amount: float
-
-
-class CancelPendingDealRequest(BaseRequest):
-    ticket: uuid.UUID
+type IndicatorCreateRequestSettingsType = pydantic.JsonValue | IndicatorCreateRequestAcceleratorOscillatorSettings
 
 
 type SignalsStatsType = list[tuple[int, list[tuple[Asset, int]]]]
 SignalsStatsTypeAdapter: pydantic.TypeAdapter[SignalsStatsType] = pydantic.TypeAdapter(SignalsStatsType)
-
-
-class PriceAlertAddRequest(BaseRequest):
-    price: float
-    asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
-
-
-class PriceAlertRemoveRequest(BaseRequest):
-    id: int
-
-
-class PriceAlertAddedEvent(BaseEvent):
-    id: int
-    price: float
-    asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
-
-
-class IndicatorType(enum.StrEnum):
-    ACCELERATOR_OSCILLATOR = "ac"
-    AWESOME_OSCILLATOR = "ao"
-    MACD = "macd"
-    RSI = "rsi"
-    STOCHASTIC_OSCILLATOR = "so"
-    ADX = "adx"
-    RATE_OF_CHANGE = "roc"
-    AROON = "aro"
-    CCI = "cci"
-    DEMARKER = "dem"
-    ADX_SMOOTHING = "adx_smoothing"
-    DI_LENGTH = "di_length"
-    WILLIAMS_R = "will"
-    BULLS_POWER = "bup"
-    BEARS_POWER = "bep"
-    MOMENTUM = "mom"
-    VORTEX = "vor"
-    MOVING_AVERAGE = "ma"
-    BOLLINGER_BANDS = "bb"
-    DONCHIAN_CHANNELS = "dc"
-    BOLLINGER_BANDS_WIDTH = "bbw"
-    ALLIGATOR = "all"
-    FRACTAL = "fra"
-    FRACTAL_CHAOS_BANDS = "fcb"
-    PARABOLIC_SAR = "sar"
-    ZIG_ZAG = "zz"
-    ENVELOPES = "env"
-    ICHIMOKU_KINKO_HYO = "icc"
-    KELTNER_CHANNEL = "kch"
-    SUPER_TREND = "sut"
-    OSMA = "osma"
-    AVERAGE_TRUE_RANGE = "atr"
-
-
-def generate_request_id() -> str:
-    return "".join(rnd.choice(string.ascii_letters + string.digits + "_-") for _ in range(21))
-
-
-class CreateIndicatorRequest(BaseRequest):
-    request_id: typing.Annotated[str, pydantic.Field(generate_request_id, alias="requestId")]
-    chart_id: typing.Annotated[str, pydantic.Field(alias="chartId")]
-    type: IndicatorType
-    settings: pydantic.JsonValue
-    visible: IntBool

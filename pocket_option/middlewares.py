@@ -10,7 +10,7 @@ from pocket_option.middleware import Middleware
 from pocket_option.utils import fix_timestamp, get_json_function
 
 if typing.TYPE_CHECKING:
-    from pocket_option.types import EmitCallback, JsonValue
+    from pocket_option.types import EmitCallback, JsonFunction, JsonValue
 
 
 __all__ = (
@@ -48,8 +48,8 @@ class _HasSpecDump(typing.Protocol):
 
 
 class MakeJsonOnMiddleware(Middleware):
-    def __init__(self) -> None:
-        self.json = get_json_function()
+    def __init__(self, json: JsonFunction | None = None) -> None:
+        self.json = json or get_json_function()
 
     async def on(self, event: str, data: str | bytes | JsonValue | None) -> JsonValue | None:  # noqa: ARG002
         if isinstance(data, str | bytes):

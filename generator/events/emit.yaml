@@ -162,6 +162,13 @@
   event: updateClosedExpresses
   category: deals
 
+- name: indicator_create
+  event: indicator/create
+  category: indicator
+  args:
+    name: data
+    type: models.IndicatorCreateRequest
+
 - name: indicator_load
   event: indicator/load
   category: indicator
