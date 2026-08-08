@@ -1,5 +1,7 @@
 import datetime
 import enum
+import random
+import string
 import typing
 import uuid
 
@@ -13,13 +15,14 @@ __all__ = (
     "ChangeAssetRequest",
     "Command",
     "CopyOrderRequest",
-    "CopyOrderRequest",
     "CopySignalRequest",
+    "CreateIndicatorRequest",
     "Deal",
     "DealAction",
     "DealsDoubleUpRequest",
     "DealsRolloverRequest",
-    "IsDemo",
+    "IndicatorType",
+    "IntBool",
     "MarketSentimentItem",
     "MarketSentimentItemListTypeAdapter",
     "OpenDealRequest",
@@ -39,7 +42,11 @@ __all__ = (
     "UpdateHistoryFastEvent",
 )
 
-type IsDemo = typing.Literal[0, 1]
+
+rnd = random.SystemRandom()
+
+
+type IntBool = typing.Literal[0, 1]
 
 
 class BaseModel(pydantic.BaseModel): ...
@@ -236,7 +243,7 @@ class AuthorizationData(BaseRequest):
 
     session: str
     is_demo: typing.Annotated[
-        IsDemo,
+        IntBool,
         pydantic.Field(..., alias="isDemo"),
     ]
     uid: int
@@ -271,7 +278,7 @@ class SuccessUpdateBalanceEvent(BaseEvent):
         Current account balance value.
     """
 
-    is_demo: typing.Annotated[IsDemo, pydantic.Field(..., alias="isDemo")]
+    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
     balance: float
 
 
@@ -393,7 +400,7 @@ class Deal(BaseEvent):
 
     uid: int
     amount: float
-    is_demo: typing.Annotated[IsDemo, pydantic.Field(..., alias="isDemo")]
+    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
 
     profit: float
     percent_profit: typing.Annotated[float, pydantic.Field(..., alias="percentProfit")]
@@ -467,7 +474,7 @@ class OpenDealRequest(BaseRequest):
     asset: Asset
     amount: int
     action: DealAction
-    is_demo: typing.Annotated[IsDemo, pydantic.Field(..., alias="isDemo")]
+    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
     request_id: typing.Annotated[int, pydantic.Field(..., alias="requestId")]
     option_type: typing.Annotated[int, pydantic.Field(..., alias="optionType")]
     time: int
@@ -512,7 +519,7 @@ class CopySignalRequest(BaseRequest):
     amount: int
     expired_at: typing.Annotated[int, pydantic.Field(..., alias="expiredAt")]
     action: DealAction
-    is_demo: typing.Annotated[IsDemo, pydantic.Field(..., alias="isDemo")]
+    is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
     request_id: typing.Annotated[int, pydantic.Field(..., alias="requestId")]
     created_at: typing.Annotated[int, pydantic.Field(..., alias="createdAt")]
     timeframe: int
@@ -786,3 +793,50 @@ class PriceAlertAddedEvent(BaseEvent):
     id: int
     price: float
     asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
+
+
+class IndicatorType(enum.StrEnum):
+    ACCELERATOR_OSCILLATOR = "ac"
+    AWESOME_OSCILLATOR = "ao"
+    MACD = "macd"
+    RSI = "rsi"
+    STOCHASTIC_OSCILLATOR = "so"
+    ADX = "adx"
+    RATE_OF_CHANGE = "roc"
+    AROON = "aro"
+    CCI = "cci"
+    DEMARKER = "dem"
+    ADX_SMOOTHING = "adx_smoothing"
+    DI_LENGTH = "di_length"
+    WILLIAMS_R = "will"
+    BULLS_POWER = "bup"
+    BEARS_POWER = "bep"
+    MOMENTUM = "mom"
+    VORTEX = "vor"
+    MOVING_AVERAGE = "ma"
+    BOLLINGER_BANDS = "bb"
+    DONCHIAN_CHANNELS = "dc"
+    BOLLINGER_BANDS_WIDTH = "bbw"
+    ALLIGATOR = "all"
+    FRACTAL = "fra"
+    FRACTAL_CHAOS_BANDS = "fcb"
+    PARABOLIC_SAR = "sar"
+    ZIG_ZAG = "zz"
+    ENVELOPES = "env"
+    ICHIMOKU_KINKO_HYO = "icc"
+    KELTNER_CHANNEL = "kch"
+    SUPER_TREND = "sut"
+    OSMA = "osma"
+    AVERAGE_TRUE_RANGE = "atr"
+
+
+def generate_request_id() -> str:
+    return "".join(rnd.choice(string.ascii_letters + string.digits + "_-") for _ in range(21))
+
+
+class CreateIndicatorRequest(BaseRequest):
+    request_id: typing.Annotated[str, pydantic.Field(generate_request_id, alias="requestId")]
+    chart_id: typing.Annotated[str, pydantic.Field(alias="chartId")]
+    type: IndicatorType
+    settings: pydantic.JsonValue
+    visible: IntBool

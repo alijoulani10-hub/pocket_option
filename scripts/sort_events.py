@@ -4,8 +4,8 @@ import yaml
 
 ORDER = ("name", "event", "category", "doc")
 SORT_FILES = (
-    (pathlib.Path("generator", "emit_events.yaml"), ("category", "name")),
-    (pathlib.Path("generator", "on_events.yaml"), ("category", "name")),
+    (pathlib.Path("generator", "events", "emit.yaml"), ("category", "name")),
+    (pathlib.Path("generator", "events", "on.yaml"), ("category", "name")),
 )
 
 

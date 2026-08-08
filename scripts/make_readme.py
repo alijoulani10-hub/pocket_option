@@ -3,8 +3,8 @@ import pathlib
 import yaml
 
 readme_paths = (pathlib.Path("README.md"), pathlib.Path("README.ru.md"))
-emit_path = pathlib.Path("generator", "emit_events.yaml")
-on_path = pathlib.Path("generator", "on_events.yaml")
+emit_path = pathlib.Path("generator", "events", "emit.yaml")
+on_path = pathlib.Path("generator", "events", "on.yaml")
 
 START_EMIT = "<!-- START_AVAILABLE_EMIT_EVENTS -->"
 END_EMIT = "<!-- END_AVAILABLE_EMIT_EVENTS -->"

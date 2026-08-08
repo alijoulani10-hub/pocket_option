@@ -1,21 +1,25 @@
 from __future__ import annotations
 
 import contextlib
+import enum
 import typing
+
+import pydantic
 
 from pocket_option.middleware import Middleware
 from pocket_option.utils import fix_timestamp, get_json_function
 
 if typing.TYPE_CHECKING:
-    from pocket_option.types import JsonValue
+    from pocket_option.types import EmitCallback, JsonValue
+
 
 __all__ = (
-    "FixTypesOnMiddleware",
+    "FixTypesMiddleware",
     "MakeJsonOnMiddleware",
 )
 
 
-UPDATE_ITEMS_NAMES = [
+UPDATE_ASSETS_KEYS: typing.Final[list[str]] = [
     "id",
     "asset",
     "label",
@@ -38,6 +42,11 @@ UPDATE_ITEMS_NAMES = [
 ]
 
 
+@typing.runtime_checkable
+class _HasSpecDump(typing.Protocol):
+    def __spec_dump__(self) -> JsonValue: ...
+
+
 class MakeJsonOnMiddleware(Middleware):
     def __init__(self) -> None:
         self.json = get_json_function()
@@ -49,7 +58,7 @@ class MakeJsonOnMiddleware(Middleware):
         return typing.cast("JsonValue", data)
 
 
-class FixTypesOnMiddleware(Middleware):
+class FixTypesMiddleware(Middleware):
     async def on(self, event: str, data: JsonValue | None) -> JsonValue | None:  # type: ignore
         if data is None:
             return None
@@ -63,8 +72,31 @@ class FixTypesOnMiddleware(Middleware):
                 for it in typing.cast("list[tuple[str, float, float]]", data)
             ]
         if event == "updateAssets":
-            return [dict(zip(UPDATE_ITEMS_NAMES, it, strict=True)) for it in typing.cast("list[list]", data)]
+            return [dict(zip(UPDATE_ASSETS_KEYS, it, strict=True)) for it in typing.cast("list[list]", data)]
         if event == "chafor":
             return [dict(zip(["asset", "value"], it, strict=True)) for it in typing.cast("list[list]", data)]
 
         return data
+
+    @classmethod
+    def _make_data(cls, v: typing.Any) -> typing.Any:
+        if isinstance(v, _HasSpecDump):
+            return v.__spec_dump__()
+        if isinstance(v, dict):
+            return {d_k: cls._make_data(d_v) for d_k, d_v in v}
+        if isinstance(v, (list, tuple, set)):
+            return [cls._make_data(it) for it in v]
+        if isinstance(v, enum.Enum):
+            return v.value
+        if isinstance(v, pydantic.BaseModel):
+            return v.model_dump(mode="json", by_alias=True)
+        return v
+
+    async def emit(
+        self,
+        event: str,
+        data: JsonValue | None = None,
+        callback: EmitCallback[JsonValue] | None = None,
+    ) -> tuple[str, JsonValue | None, EmitCallback[JsonValue] | None]:
+        data = self._make_data(data)
+        return event, data, callback

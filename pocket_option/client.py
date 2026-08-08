@@ -11,7 +11,7 @@ import socketio
 
 from pocket_option.constants import DEFAULT_ORIGIN, DEFAULT_USER_AGENT
 from pocket_option.errors import PocketOptionError
-from pocket_option.middlewares import FixTypesOnMiddleware, MakeJsonOnMiddleware
+from pocket_option.middlewares import FixTypesMiddleware, MakeJsonOnMiddleware
 from pocket_option.utils import get_function_full_name, get_json_function
 
 if typing.TYPE_CHECKING:
@@ -33,6 +33,7 @@ class _Handler[T](typing.TypedDict):
     name: str
     model: type[pydantic.BaseModel] | pydantic.TypeAdapter | None
     callback: T
+    once: typing.NotRequired[bool]
 
 
 class BasePocketOptionClient:
@@ -143,7 +144,7 @@ class BasePocketOptionClient:
             Defaults to `False`.
         """
         self.authorization_data = None
-        self.middlewares = middlewares or [MakeJsonOnMiddleware(), FixTypesOnMiddleware()]
+        self.middlewares = middlewares or [MakeJsonOnMiddleware(), FixTypesMiddleware()]
         self.json = json or get_json_function()
         self.sio = socketio.AsyncClient(
             reconnection=reconnection,
@@ -189,6 +190,8 @@ class BasePocketOptionClient:
         self._deals_storage: DealsStorage | None = None
         self._assets_storage: AssetsStorage | None = None
         self.filter_events_log = filter_events_log or ["updateStream"]
+
+        self.emit_lock = asyncio.Lock()
 
     @property
     def candles(self) -> CandleStorage:
@@ -305,9 +308,9 @@ class BasePocketOptionClient:
         self,
         value: (
             T
-            | None
             | collections.abc.Callable[[], T]
             | collections.abc.Callable[[], collections.abc.Coroutine[None, None, T]]
+            | None
         ),
     ) -> T | None:
         if callable(value):
@@ -406,6 +409,7 @@ class BasePocketOptionClient:
             try:
                 result = await handler["callback"](data)
                 results.append(result)
+
             except Exception:
                 self.logger.exception(
                     "Error on handler %s, %s",
@@ -419,6 +423,8 @@ class BasePocketOptionClient:
                         get_function_full_name(handler["callback"]),
                         result,
                     )
+                if handler.get("once"):
+                    self.handlers.remove(handler)
 
         for result in results:
             if result is not None:
@@ -431,6 +437,7 @@ class BasePocketOptionClient:
         handler: None = ...,
         *,
         model: type[pydantic.BaseModel] | pydantic.TypeAdapter | None = ...,
+        once: bool = False,
     ) -> typing.Callable[[SIOEventListener], None]: ...
     @typing.overload
     def add_on(
@@ -439,6 +446,7 @@ class BasePocketOptionClient:
         handler: SIOEventListener,
         *,
         model: type[pydantic.BaseModel] | pydantic.TypeAdapter | None = ...,
+        once: bool = False,
     ) -> None: ...
 
     def add_on(
@@ -447,7 +455,8 @@ class BasePocketOptionClient:
         handler: SIOEventListener | None = None,
         *,
         model: type[pydantic.BaseModel] | pydantic.TypeAdapter | None = None,
-    ) -> None | typing.Callable[[SIOEventListener], None]:
+        once: bool = False,
+    ) -> typing.Callable[[SIOEventListener], None] | None:
         """
         Register Socket.IO event handler.
 
@@ -466,6 +475,9 @@ class BasePocketOptionClient:
 
         :param model: Optional Pydantic model used for payload validation.
         :type model: type[pydantic.BaseModel] | pydantic.TypeAdapter | None
+
+        :param once: Remove handler after first execution.
+        :type once: bool
 
         :return: Decorator when handler is omitted.
         :rtype: typing.Callable | None
@@ -502,7 +514,7 @@ class BasePocketOptionClient:
                     result = await result
                 return _get_result(result)
 
-            self.handlers.append({"name": event, "callback": wrapper, "model": model})  # type: ignore
+            self.handlers.append({"name": event, "callback": wrapper, "model": model, "once": once})  # type: ignore
 
         if handler:
             return set_handler(handler)
@@ -513,7 +525,6 @@ class BasePocketOptionClient:
         event: str,
         data: JsonValue | pydantic.BaseModel | None = None,
         callback: EmitCallback[JsonValue] | None = None,
-        type_adapter: pydantic.TypeAdapter | None = None,
     ) -> None:
         """
         Emit event to PocketOption server.
@@ -536,19 +547,16 @@ class BasePocketOptionClient:
         """
         if event == "auth":
             self.authorization_data = typing.cast("models.AuthorizationData", data)
-        if type_adapter is not None:
-            data = type_adapter.dump_python(data, mode="json")
-        if isinstance(data, pydantic.BaseModel):
-            data = data.model_dump(mode="json", by_alias=True)
-        if isinstance(data, list):
-            data = [
-                it.model_dump(mode="json", by_alias=True) if isinstance(it, pydantic.BaseModel) else it for it in data
-            ]
         for middleware in self.middlewares:
-            event, data, callback = await middleware.emit(event, data=data, callback=callback)
+            event, data, callback = await middleware.emit(
+                event,
+                data=typing.cast("JsonValue | None", data),
+                callback=callback,
+            )
         self.logger.debug(
             "Emitting event '%s' with data %r",
             event,
             data if event != "auth" else {**typing.cast("dict[str, JsonValue]", data), "session": "***"},
         )
-        return await self.sio.emit(event=event, data=data, callback=callback)
+        async with self.emit_lock:
+            return await self.sio.emit(event=event, data=data, callback=callback)

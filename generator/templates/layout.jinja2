@@ -34,15 +34,28 @@ class PocketOptionClientOn:
         self.client = client
 
 {% for on_method in data.on %}
-{% include 'on_method.jinja2' %}
+{% include 'on.jinja2' %}
 {% endfor %}
 
+
+class PocketOptionClientOnce:
+
+    def __init__(self, client: BasePocketOptionClient) -> None:
+        self.client = client
+
+{% for on_method in data.on %}
+{% include 'once.jinja2' %}
+{% endfor %}
 
 class PocketOptionClient(BasePocketOptionClient):
 
     @property
     def on(self) -> PocketOptionClientOn:
         return PocketOptionClientOn(self)
+
+    @property
+    def once(self) -> PocketOptionClientOnce:
+        return PocketOptionClientOnce(self)
 
     @property
     def emit(self) -> PocketOptionClientEmit:

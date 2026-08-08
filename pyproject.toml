@@ -7,11 +7,11 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "python-socketio[asyncio-client] (>=5.14.2,<6.0.0)",
     "aiohttp[speedups] (>=3.13.1,<4.0.0)",
-    "pydantic (>=2.12.3,<3.0.0)",
-    "pytz (>=2025.2,<2027.0)",
     "brotli (>=1.2.0,<2.0.0)",
+    "pydantic (>=2.12.3,<3.0.0)",
+    "python-socketio[asyncio-client] (>=5.14.2,<6.0.0)",
+    "pytz (>=2025.2,<2027.0)",
 ]
 keywords = [
     "pocket option",
@@ -47,13 +47,13 @@ ujson = ["ujson (>=5.11.0,<6.0.0)"]
 
 [dependency-groups]
 dev = [
-    "ruff (>=0.14.1,<0.17.0)",
-    "pre-commit (>=4.3.0,<5.0.0)",
-    "isort (>=7.0.0,<9.0.0)",
     "black (>=25.9.0,<27.0.0)",
-    "rich (>=14.2.0,<16.0.0)",
+    "isort (>=7.0.0,<9.0.0)",
     "jinja2 (>=3.1.6,<4.0.0)",
+    "pre-commit (>=4.3.0,<5.0.0)",
     "pytest (>=9.1.1,<10.0.0)",
+    "rich (>=14.2.0,<16.0.0)",
+    "ruff (>=0.14.1,<0.17.0)",
 ]
 detect-secrets = ["pre-commit (>=4.4.0,<5.0.0)"]
 
@@ -104,6 +104,7 @@ lint.ignore = [
     "ANN401",
     "C408",
     "C901",
+    "COM812",
     "CPY001",
     "D",
     "DTZ005",
@@ -116,16 +117,20 @@ lint.ignore = [
     "PGH003",
     "PLR0912",
     "PLR0913",
+    "PLR0917",
     "RET503",
     "RUF001",
     "RUF002",
     "RUF003",
     "S110",
     "TRY003",
-    "TRY301",
-    "COM812"
+    "TRY301"
 ]
-lint.fixable = ["I", "RUF022", "UP035"]
+lint.fixable = [
+    "I",
+    "RUF022",
+    "UP035"
+]
 
 
 [tool.ruff.lint.per-file-ignores]

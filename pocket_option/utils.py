@@ -8,6 +8,8 @@ import time
 import typing
 from dataclasses import dataclass
 
+import pytz
+
 from pocket_option.constants import TIMESTAMP_OFFSET
 
 if typing.TYPE_CHECKING:
@@ -221,10 +223,6 @@ def get_json_function() -> JsonFunction:
     return _JsonLoads()
 
 
-def fix_timestamp(ts: float) -> float:
-    return ts + TIMESTAMP_OFFSET
-
-
 @typing.overload
 def append_or_replace[T](
     array: list[T],
@@ -255,6 +253,18 @@ def append_or_replace[T](
 
 def get_server_time() -> float:
     return time.time() - TIMESTAMP_OFFSET
+
+
+@typing.overload
+def fix_timestamp(ts: float) -> float: ...
+@typing.overload
+def fix_timestamp(ts: datetime.datetime) -> datetime.datetime: ...
+def fix_timestamp(ts: typing.Any) -> typing.Any:
+    if isinstance(ts, float):
+        return ts + TIMESTAMP_OFFSET
+    if isinstance(ts, datetime.datetime):
+        return datetime.datetime.fromtimestamp(ts.timestamp() + TIMESTAMP_OFFSET, tz=pytz.UTC)
+    raise TypeError(f"Unsupported type: {type(ts)}")
 
 
 def generate_request_id() -> int:

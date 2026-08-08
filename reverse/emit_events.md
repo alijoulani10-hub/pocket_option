@@ -56,8 +56,8 @@
 | `favorite_load`      | `favorite/load`        |     [x]     |    [🔗](#favorite-load)     |
 | ``                   | `favorite/change`      |     [ ]     |   [🔗](#favorite-change)    |
 | `price_alert_load`   | `price-alert/load`     |     [x]     |   [🔗](#price-alert-load)   |
-| `price_alert_add`    | `price-alert/add`      |     [ ]     |   [🔗](#price-alert-add)    |
-| `price_alert_remove` | `price-alert/remove`   |     [ ]     |  [🔗](#price-alert-remove)  |
+| `price_alert_add`    | `price-alert/add`      |     [x]     |   [🔗](#price-alert-add)    |
+| `price_alert_remove` | `price-alert/remove`   |     [x]     |  [🔗](#price-alert-remove)  |
 | ``                   | `user/change-platform` |     [ ]     | [🔗](#user-change-platform) |
 
 # AI events
@@ -421,6 +421,34 @@ Delete chart.
 
 <h2 id="indicator-create"><code>indicator/create</code></h2>
 Create indicator.
+
+```
+42["indicator/create",{"requestId":"NPnIFWilceJ_4E6C8wKMa","chartId":"chart-1","type":"ac","settings":{"lines":{"main":{"opacity":80,"colors":{"up":{"color":"#86da0e"},"down":{"color":"#ff0000"}}}},"aoPeriodShort":5,"aoPeriodLong":34,"acPeriod":5},"visible":1}]
+
+451-["failindicator/create",{"_placeholder":true,"num":0}]
+{"requestId":"NPnIFWilceJ_4E6C8wKMa","chartId":"chart-1","type":"ac","settings":{"lines":{"main":{"opacity":80,"colors":{"up":{"color":"#86da0e"},"down":{"color":"#ff0000"}}}},"aoPeriodShort":5,"aoPeriodLong":34,"acPeriod":5},"visible":1,"id":57374094}
+
+42["indicator/create",{"requestId":"Z1QEVtmwKN1QC5CRHIlhi","chartId":"chart-1","type":"aro","settings":{"lines":{"up":{"lineWidth":1,"color":"#2256ff"},"down":{"lineWidth":1,"color":"#ff0000"}},"period":25},"visible":1}]
+
+42["indicator/create",{"requestId":"wHwDbLrPwSMtDe0YY8EZK","chartId":"chart-1","type":"bep","settings":{"lines":{"main":{"color":"#86da0e","figure":"line","lineWidth":1}},"period":13},"visible":1}]
+
+
+42["indicator/create",{"requestId":"VW56w3eCm7kSMG1uYTmfP","chartId":"chart-1","type":"bup","settings":{"lines":{"main":{"lineWidth":1,"color":"#86da0e","figure":"line"}},"period":13},"visible":1}]
+
+42["indicator/create",{"requestId":"zxtMIqtxIDQtLnwzi6JaB","chartId":"chart-1","type":"dem","settings":{"lines":{"main":{"lineWidth":1,"color":"#00ffcc","figure":"line"},"overbought":{"lineWidth":1,"color":"#86da0e","level":70,"opacity":60},"oversold":{"lineWidth":1,"color":"#ff0000","level":30,"opacity":60}},"period":14},"visible":1}]
+
+42["indicator/create",{"requestId":"FfvYz832cvAZJtGdnjEHW","chartId":"chart-1","type":"fcb","settings":{"lines":{"up":{"color":"#86da0e"},"down":{"color":"#ff0000"},"background":{"color":"#86da0e","opacity":10}},"period":2},"visible":1}]
+
+42["indicator/create",{"requestId":"S7m1EeXD4vf5gQGdiJuAj","chartId":"chart-1","type":"macd","settings":{"lines":{"histogram":{"colors":{"up":{"color":"#86da0e","opacity":70},"down":{"color":"#ff0000","opacity":70}}},"macd":{"lineWidth":1,"color":"#86da0e"},"signal":{"lineWidth":1,"color":"#ff0000"}},"fastPeriod":12,"slowPeriod":26,"signalPeriod":9},"visible":1}]
+
+42["indicator/create",{"requestId":"u8ABcsqsCNOG2NB1PsSOR","chartId":"chart-1","type":"osma","settings":{"lines":{"histogram":{"color":"#86da0e","opacity":80}},"fastPeriod":12,"slowPeriod":26,"signalPeriod":9},"visible":1}]
+
+42["indicator/create",{"requestId":"fFo-motRy9BVIEHpXxhsw","chartId":"chart-1","type":"roc","settings":{"lines":{"main":{"lineWidth":1,"color":"#f1c40f"}},"period":14},"visible":1}]
+
+42["indicator/create",{"requestId":"xDgUVzyBThmUdPaJCSWQ0","chartId":"chart-1","type":"sut","settings":{"lines":{"up":{"lineWidth":2,"color":"#ff0000","opacity":80},"down":{"lineWidth":2,"color":"#86da0e","opacity":80}},"atrPeriod":10,"multiplier":3},"visible":1}]
+
+
+```
 
 ### Payload
 

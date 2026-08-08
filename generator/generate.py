@@ -17,6 +17,13 @@ logging.basicConfig(
 )
 
 
+TEMPLATES_FORLDER = pathlib.Path(__file__).parent / "templates"
+EVENTS_FOLDER = pathlib.Path(__file__).parent / "events"
+GENERATED_CLIENT_FILE = pathlib.Path(
+    pathlib.Path(__file__).parent.parent, "pocket_option", "generated_client.py"
+).absolute()
+
+
 class OnMethod(pydantic.BaseModel):
     name: str
     event: str
@@ -48,41 +55,41 @@ class Data(pydantic.BaseModel):
     emit: list[EmitMethod]
 
 
-env = jinja2.Environment(loader=jinja2.FileSystemLoader(pathlib.Path(__file__).parent), autoescape=False)  # noqa: S701
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATES_FORLDER), autoescape=False)  # noqa: S701
 
 
 def generate():
     data = Data.model_validate(
         {
             "on": yaml.safe_load(
-                pathlib.Path(pathlib.Path(__file__).parent, "on_events.yaml").read_text(encoding="utf-8"),
+                pathlib.Path(EVENTS_FOLDER, "on.yaml").read_text(encoding="utf-8"),
             ),
             "emit": yaml.safe_load(
-                pathlib.Path(pathlib.Path(__file__).parent, "emit_events.yaml").read_text(encoding="utf-8"),
+                pathlib.Path(EVENTS_FOLDER, "emit.yaml").read_text(encoding="utf-8"),
             ),
         },
     )
 
     layout = env.get_template("layout.jinja2")
-    pathlib.Path("pocket_option", "generated_client.py").write_text(layout.render(data=data))
+    GENERATED_CLIENT_FILE.write_text(layout.render(data=data))
 
-    subprocess.run(
+    subprocess.run(  # noqa: S603
         [  # noqa: S607
             "poetry",
             "run",
             "ruff",
             "format",
-            "pocket_option/generated_client.py",
+            str(GENERATED_CLIENT_FILE),
         ],
         check=True,
     )
-    subprocess.run(
+    subprocess.run(  # noqa: S603
         [  # noqa: S607
             "poetry",
             "run",
             "ruff",
             "check",
-            "pocket_option/generated_client.py",
+            str(GENERATED_CLIENT_FILE),
             "--fix",
             "--unsafe-fixes",
         ],

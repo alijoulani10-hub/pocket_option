@@ -1,0 +1,32 @@
+{% set listener = "NoDataEventListener" if on_method.return_type == "None" else "TypedEventListener[" ~ on_method.return_type ~ "]" %}
+
+    @typing.overload
+    def {{ on_method.name }}(
+        self,
+        handler: None = None,
+    ) -> "typing.Callable[[{{ listener }}], None]": ...
+
+    @typing.overload
+    def {{ on_method.name }}(
+        self,
+        handler: "{{ listener }}",
+    ) -> None: ...
+
+    def {{ on_method.name }}(
+        self,
+        handler: "{{ listener }} | None" = None,
+    ) -> "typing.Callable[[{{ listener }}], None] | None":
+        """{{ on_method.doc or 'No description' }}
+        {% if on_method.category %}
+        Category: `{{ on_method.category }}`
+        {% endif %}
+
+        :param handler: Callback
+        :type handler: {{ listener }} | None
+        """
+        return self.client.add_on(
+            "{{ on_method.event }}",
+            handler=handler{% if on_method.pydantic_model %},
+            model={{ on_method.pydantic_model }}{% endif %},
+            once=True,
+        )

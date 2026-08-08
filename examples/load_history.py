@@ -145,7 +145,7 @@ async def main():
     except KeyboardInterrupt:
         logger.info("Stopping...")
     finally:
-        await client.disconnect()
+        await client.shutdown()
         await tortoise.Tortoise.close_connections()
 
 

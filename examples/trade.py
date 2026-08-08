@@ -113,7 +113,7 @@ async def main():
     except KeyboardInterrupt:
         logger.info("Stopping...")
     finally:
-        await client.disconnect()
+        await client.shutdown()
 
 
 if __name__ == "__main__":

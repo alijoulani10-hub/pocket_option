@@ -16,7 +16,7 @@ from pocket_option.constants import (
 )
 from pocket_option.errors import DealError
 from pocket_option.generated_client import PocketOptionClient
-from pocket_option.models import Asset, Deal, DealAction, IsDemo, OpenDealRequest, SuccessCloseDealEvent
+from pocket_option.models import Asset, Deal, DealAction, IntBool, OpenDealRequest, SuccessCloseDealEvent
 from pocket_option.utils import Q, append_or_replace, generate_request_id
 
 if typing.TYPE_CHECKING:
@@ -91,7 +91,7 @@ class DealsStorage:
         amount: int,
         action: DealAction,
         time: int,
-        is_demo: IsDemo = 1,
+        is_demo: IntBool = 1,
         request_id: int | None = None,
         option_type: int = 100,
         *,
@@ -122,7 +122,7 @@ class DealsStorage:
         :type time: int
 
         :param is_demo: Use demo account
-        :type is_demo: IsDemo
+        :type is_demo: IntBool
 
         :param request_id: Custom request id
         :type request_id: int | None
