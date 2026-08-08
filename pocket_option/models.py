@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import enum
 import random
 import string
@@ -359,7 +360,7 @@ class CopySignalRequest(BaseRequest):
     """
 
     symbol: Asset
-    amount: int
+    amount: decimal.Decimal
     expired_at: typing.Annotated[int, pydantic.Field(..., alias="expiredAt")]
     action: "DealAction"
     is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
@@ -429,10 +430,10 @@ class Deal(BaseEvent):
     asset: Asset
 
     uid: int
-    amount: float
+    amount: decimal.Decimal
     is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
 
-    profit: float
+    profit: decimal.Decimal
     percent_profit: typing.Annotated[float, pydantic.Field(..., alias="percentProfit")]
     percent_loss: typing.Annotated[float, pydantic.Field(..., alias="percentLoss")]
 
@@ -443,8 +444,8 @@ class Deal(BaseEvent):
     refund_time: typing.Annotated[datetime.datetime | None, pydantic.Field(None, alias="refundTime")]
     refund_timestamp: typing.Annotated[int | None, pydantic.Field(None, alias="refundTimestamp")]
 
-    open_price: typing.Annotated[float, pydantic.Field(..., alias="openPrice")]
-    close_price: typing.Annotated[float | None, pydantic.Field(None, alias="closePrice")]
+    open_price: typing.Annotated[decimal.Decimal, pydantic.Field(..., alias="openPrice")]
+    close_price: typing.Annotated[decimal.Decimal | None, pydantic.Field(None, alias="closePrice")]
 
     copy_ticket: typing.Annotated[str, pydantic.Field(..., alias="copyTicket")]
     open_ms: typing.Annotated[int | None, pydantic.Field(None, alias="openMs")]
@@ -454,7 +455,7 @@ class Deal(BaseEvent):
     is_copy_signal: typing.Annotated[bool, pydantic.Field(..., alias="isCopySignal")]
     is_ai: typing.Annotated[bool | None, pydantic.Field(None, alias="isAI")]
     currency: str
-    amount_usd: typing.Annotated[float | None, pydantic.Field(None, alias="amountUSD")]
+    amount_usd: typing.Annotated[decimal.Decimal | None, pydantic.Field(None, alias="amountUSD")]
     request_id: typing.Annotated[int | None, pydantic.Field(None, alias="requestId")]
 
     @property
@@ -486,7 +487,30 @@ class DealsDoubleUpRequest(BaseRequest):
 
 class DealsRolloverRequest(BaseRequest):
     ticket: uuid.UUID
-    amount: float
+    amount: decimal.Decimal
+
+
+class FailOpenOrderEvent(BaseEvent):
+    error: str
+    asset: Asset
+
+    amount: decimal.Decimal | None = None
+    request_id: int | None = pydantic.Field(None, alias="requestId")
+    balance: decimal.Decimal | None = None
+
+    extras: dict[str, pydantic.JsonValue] | None = None
+
+    @pydantic.model_validator(mode="before")
+    @classmethod
+    def collect_extras(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+
+        known = cls.model_fields.keys()
+        return {
+            **data,
+            "extras": {key: value for key, value in data.items() if key not in known},
+        }
 
 
 class IndicatorCreateRequest(BaseRequest):
@@ -607,10 +631,10 @@ class LoadHistoryPeriodItem(BaseEvent):
 
     symbol_id: int
     time: int
-    open: float
-    close: float
-    high: float
-    low: float
+    open: decimal.Decimal
+    close: decimal.Decimal
+    high: decimal.Decimal
+    low: decimal.Decimal
     volume: int
 
 
@@ -644,7 +668,7 @@ class MarketSentimentItem(BaseEvent):
     """
 
     asset: Asset
-    value: int
+    value: decimal.Decimal
 
 
 MarketSentimentItemListTypeAdapter = pydantic.TypeAdapter(list[MarketSentimentItem])
@@ -682,7 +706,7 @@ class OpenDealRequest(BaseRequest):
     model_config = pydantic.ConfigDict(validate_by_name=True, validate_by_alias=True)
 
     asset: Asset
-    amount: int
+    amount: decimal.Decimal
     action: "DealAction"
     is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
     request_id: typing.Annotated[int, pydantic.Field(..., alias="requestId")]
@@ -725,9 +749,9 @@ class OpenPendingDealRequest(BaseRequest):
     amount: int
     asset: Asset
     open_time: typing.Annotated[str, pydantic.Field(..., alias="openTime")]
-    open_price: typing.Annotated[int, pydantic.Field(..., alias="openPrice")]
+    open_price: typing.Annotated[decimal.Decimal, pydantic.Field(..., alias="openPrice")]
     timeframe: int
-    min_payout: typing.Annotated[int, pydantic.Field(..., alias="minPayout")]
+    min_payout: typing.Annotated[decimal.Decimal, pydantic.Field(..., alias="minPayout")]
     command: Command
 
 
@@ -737,13 +761,13 @@ class OpenPendingDealRequestOpenType(enum.IntEnum):
 
 
 class PriceAlertAddRequest(BaseRequest):
-    price: float
+    price: decimal.Decimal
     asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
 
 
 class PriceAlertAddedEvent(BaseEvent):
     id: int
-    price: float
+    price: decimal.Decimal
     asset_id: typing.Annotated[int, pydantic.Field(alias="assetId")]
 
 
@@ -777,7 +801,7 @@ class SuccessUpdateBalanceEvent(BaseEvent):
     """
 
     is_demo: typing.Annotated[IntBool, pydantic.Field(..., alias="isDemo")]
-    balance: float
+    balance: decimal.Decimal
 
 
 class UpdateAssetItem(BaseEvent):
@@ -860,7 +884,7 @@ class UpdateCloseValueItem(BaseEvent):
 
     asset: Asset
     timestamp: float
-    value: float
+    value: decimal.Decimal
 
 
 UpdateCloseValueListTypeAdapter = pydantic.TypeAdapter(list[UpdateCloseValueItem])
@@ -894,7 +918,7 @@ class UpdateHistoryFastEvent(BaseEvent):
 
     asset: Asset
     period: int
-    history: list[list[float]]
+    history: list[list[decimal.Decimal]]
 
 
 type IndicatorCreateRequestSettingsType = pydantic.JsonValue | IndicatorCreateRequestAcceleratorOscillatorSettings

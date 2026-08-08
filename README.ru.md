@@ -244,6 +244,7 @@ if __name__ == "__main__":
 | `client.on.disconnect` | `disconnect` | common | Triggered when the Socket.IO connection is closed. |
 | `client.on.load_history_period_fast` | `loadHistoryPeriodFast` | common | Triggered when historical market data for a specific period is loaded. |
 | `client.on.success_auth` | `successauth` | common | Triggered after successful account authorization. |
+| `client.on.deals_fail_open` | `failopenOrder` | deals | Triggered when a deal fails to open. |
 | `client.on.deals_success_close` | `successcloseOrder` | deals | Triggered after one or more deals are successfully closed. |
 | `client.on.deals_success_open` | `successopenOrder` | deals | Triggered after a new deal is successfully opened. |
 | `client.on.deals_update_closed` | `updateClosedDeals` | deals | Triggered when closed deals information is updated. |

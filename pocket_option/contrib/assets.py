@@ -10,11 +10,12 @@ import pydantic
 
 from pocket_option.generated_client import PocketOptionClient
 from pocket_option.models import Asset, UpdateAssetItem
+from pocket_option.q_expressions import PythonQEvaluator
 
 if typing.TYPE_CHECKING:
     from pocket_option.generated_client import PocketOptionClient
     from pocket_option.models import Asset
-    from pocket_option.utils import Q
+    from pocket_option.q_expressions import Q
 
 __all__ = (
     "AssetsStorage",
@@ -49,7 +50,7 @@ class AssetsStorage(abc.ABC):
     ) -> UpdateAssetItem | None: ...
 
     @abc.abstractmethod
-    async def search_assets(self, *, query: typing.Any | None = None) -> list[UpdateAssetItem]: ...
+    async def search_assets(self, *, query: Q | None = None) -> list[UpdateAssetItem]: ...
 
     @abc.abstractmethod
     async def add_asset(self, item: UpdateAssetItem) -> None: ...
@@ -61,6 +62,7 @@ class MemoryAssetsStorage(AssetsStorage):
     def __init__(self, client: PocketOptionClient):
         super().__init__(client)
         self._storage: dict[int, UpdateAssetItem] = {}
+        self._evaluator = PythonQEvaluator()
 
     async def get_assets(self) -> list[UpdateAssetItem]:
         return list(self._storage.values())
@@ -81,7 +83,7 @@ class MemoryAssetsStorage(AssetsStorage):
     async def search_assets(self, *, query: Q | None = None) -> list[UpdateAssetItem]:
         assets = list(self._storage.values())
         if query is not None:
-            assets = [it for it in assets if query(it)]
+            assets = [it for it in assets if self._evaluator.evaluate(query, it)]
         return assets
 
     async def add_asset(self, item: UpdateAssetItem) -> None:

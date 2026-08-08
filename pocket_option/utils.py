@@ -6,7 +6,6 @@ import inspect
 import random
 import time
 import typing
-from dataclasses import dataclass
 
 import pytz
 
@@ -14,12 +13,10 @@ from pocket_option.constants import TIMESTAMP_OFFSET
 
 if typing.TYPE_CHECKING:
     from collections import deque
-    from collections.abc import Callable
 
     from pocket_option.types import JsonFunction, JsonValue
 
 __all__ = (
-    "Q",
     "append_or_replace",
     "fix_timestamp",
     "generate_index",
@@ -29,166 +26,6 @@ __all__ = (
 )
 
 rnd = random.SystemRandom()
-
-
-@dataclass(slots=True)
-class Q:
-    """
-    Query expression builder.
-
-    Provides a lightweight filtering system inspired by ORM query objects.
-
-    Q objects encapsulate boolean predicates and can be combined using
-    logical operators:
-
-        - ``&`` creates AND expressions.
-        - ``|`` creates OR expressions.
-        - ``~`` creates NOT expressions.
-
-    This allows building reusable and composable filters.
-
-    Example:
-
-        query = (
-            Q.field("asset", "eq", Asset.AUDCAD_otc)
-            &
-            Q.field("price", "gte", 10)
-        )
-
-        filtered = [
-            item
-            for item in items
-            if query(item)
-        ]
-
-    Field lookup expressions are created using :meth:`field`.
-
-    Supported operators:
-
-        - ``eq``:
-            Field equals value.
-
-        - ``gt``:
-            Field greater than value.
-
-        - ``gte``:
-            Field greater than or equal to value.
-
-        - ``lt``:
-            Field less than value.
-
-        - ``lte``:
-            Field less than or equal to value.
-
-        - ``isnull``:
-            Checks whether field value is None.
-
-    DateTime fields are automatically converted to Unix timestamps
-    before comparison.
-
-    """
-
-    func: Callable[[typing.Any], bool]
-
-    def __call__(self, obj: typing.Any) -> bool:
-        return self.func(obj)
-
-    def __and__(self, other: Q) -> Q:
-        return Q(lambda obj: self(obj) and other(obj))
-
-    def __or__(self, other: Q) -> Q:
-        return Q(lambda obj: self(obj) or other(obj))
-
-    def __invert__(self) -> Q:
-        return Q(lambda obj: not self(obj))
-
-    @classmethod
-    def field(  # noqa: PLR0911
-        cls,
-        name: str,
-        op: typing.Literal[
-            "eq",
-            "neq",
-            "gt",
-            "gte",
-            "lt",
-            "lte",
-            "isnull",
-        ],
-        value: typing.Any,
-    ) -> typing.Self:
-        """
-        Create field comparison query.
-
-        Generates a predicate that compares an object attribute with
-        the provided value.
-
-        The attribute value is retrieved using ``getattr``.
-        datetime values are automatically converted to Unix timestamps
-        before comparison.
-
-        Example:
-
-            query = Q.field(
-                "asset",
-                "eq",
-                Asset.AUDCAD_otc,
-            )
-
-        Supported operators:
-            ```
-            - eq        equal                   =
-            - neq       not equal               !=
-            - gt        greater than            >
-            - gte       greater than or equal   >=
-            - lt        less than               <
-            - lte       less than or equal      <=
-            - isnull    is null                 v is None
-            ```
-
-        :param name: Object attribute name.
-        :type name: str
-
-        :param op: Comparison operator.
-        :type op: str
-
-        :param value: Value to compare against.
-        :type value: typing.Any
-
-        :raises ValueError: If operator is not supported.
-
-        :return: Query expression.
-        :rtype: Q
-        """
-
-        def getter(obj: typing.Any):
-            result = getattr(obj, name)
-            if isinstance(result, datetime.datetime):
-                return result.timestamp()
-            return result
-
-        match op:
-            case "eq":
-                return cls(lambda obj: getter(obj) == value)
-            case "neq":
-                return cls(lambda obj: getter(obj) != value)
-            case "gt":
-                return cls(lambda obj: getter(obj) > value)
-
-            case "gte":
-                return cls(lambda obj: getter(obj) >= value)
-
-            case "lt":
-                return cls(lambda obj: getter(obj) < value)
-
-            case "lte":
-                return cls(lambda obj: getter(obj) <= value)
-
-            case "isnull":
-                return cls(lambda obj: (getter(obj) is None) == value)
-
-            case _:
-                raise ValueError(op)
 
 
 @typing.runtime_checkable

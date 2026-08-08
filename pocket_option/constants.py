@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import decimal
 import enum
 
 __all__ = (
@@ -17,8 +18,8 @@ __all__ = (
 )
 
 
-API_LIMITS_MIN_ORDER_AMOUNT = 1
-API_LIMITS_MAX_ORDER_AMOUNT = 50_000
+API_LIMITS_MIN_ORDER_AMOUNT = decimal.Decimal("1.0")
+API_LIMITS_MAX_ORDER_AMOUNT = decimal.Decimal("50_000.0")
 API_LIMITS_MIN_DURATION = 5
 API_LIMITS_MAX_DURATION = 43_200
 API_LIMITS_MAX_CONCURRENT_ORDERS = 10

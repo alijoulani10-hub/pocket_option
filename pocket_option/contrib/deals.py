@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import asyncio
 import contextlib
+import decimal
 import itertools
 import logging
 import typing
@@ -16,8 +17,17 @@ from pocket_option.constants import (
 )
 from pocket_option.errors import DealError
 from pocket_option.generated_client import PocketOptionClient
-from pocket_option.models import Asset, Deal, DealAction, IntBool, OpenDealRequest, SuccessCloseDealEvent
-from pocket_option.utils import Q, append_or_replace, generate_request_id
+from pocket_option.models import (
+    Asset,
+    Deal,
+    DealAction,
+    FailOpenOrderEvent,
+    IntBool,
+    OpenDealRequest,
+    SuccessCloseDealEvent,
+)
+from pocket_option.q_expressions import PythonQEvaluator, Q
+from pocket_option.utils import append_or_replace, generate_request_id
 
 if typing.TYPE_CHECKING:
     import collections.abc
@@ -76,9 +86,11 @@ class DealsStorage:
         self.client = client
 
         self._open_deal_events: dict[int, asyncio.Event] = {}
+        self._failed_open_deal_events: dict[int, FailOpenOrderEvent] = {}
         self._close_deal_events: dict[uuid.UUID, asyncio.Event] = {}
 
         self.client.on.deals_success_open(self._on_success_open_deal)
+        self.client.on.deals_fail_open(self._on_fail_open_deal)
         self.client.on.deals_success_close(self._on_success_close_deal)
         self.client.on.deals_update_opened(self.add_or_update_deal_bulk)
         self.client.on.deals_update_closed(self.add_or_update_deal_bulk)
@@ -88,7 +100,7 @@ class DealsStorage:
     async def open_deal(
         self,
         asset: Asset,
-        amount: int,
+        amount: int | decimal.Decimal,
         action: DealAction,
         time: int,
         is_demo: IntBool = 1,
@@ -196,7 +208,7 @@ class DealsStorage:
         await self.client.emit.deals_open(
             OpenDealRequest(
                 asset=asset,
-                amount=amount,
+                amount=decimal.Decimal(amount),
                 action=action,
                 time=time,
                 is_demo=is_demo,
@@ -216,6 +228,20 @@ class DealsStorage:
 
         if deal := await self.get_deal(request_id=request_id):
             return deal
+
+        if error := self._failed_open_deal_events.pop(request_id, None):
+            raise DealError(
+                error.error,
+                "Failed to open deal",
+                extras={
+                    "request_id": request_id,
+                    "amount": error.amount,
+                    "asset": error.asset,
+                    "balance": error.balance,
+                    **(error.extras or {}),
+                },
+            )
+
         raise DealError(
             "not_found",
             "Failed to find deal",
@@ -317,6 +343,12 @@ class DealsStorage:
             if event := self._close_deal_events.pop(deal.id, None):
                 event.set()
 
+    async def _on_fail_open_deal(self, error: FailOpenOrderEvent) -> None:
+        if error.request_id is not None:
+            self._failed_open_deal_events[error.request_id] = error
+            if event := self._open_deal_events.pop(error.request_id, None):
+                event.set()
+
     @abc.abstractmethod
     async def add_or_update_deal(self, deal: Deal) -> None: ...
     @abc.abstractmethod
@@ -360,7 +392,7 @@ class DealsStorage:
     async def get_deals(
         self,
         *,
-        query: typing.Any,
+        query: Q,
         count: int | None = None,
     ) -> collections.abc.Iterable[Deal]: ...
 
@@ -375,6 +407,7 @@ class MemoryDealsStorage(DealsStorage):
     def __init__(self, client: PocketOptionClient) -> None:
         super().__init__(client)
         self._deals: list[Deal] = []
+        self._evaluator = PythonQEvaluator()
 
     async def add_or_update_deal(self, deal: Deal) -> None:
         self._deals = append_or_replace(self._deals, deal, eq_by_keys=["id"])
@@ -429,7 +462,7 @@ class MemoryDealsStorage(DealsStorage):
         data = self._deals.copy()
 
         if query:
-            data = [deal for deal in data if query(deal)]
+            data = [deal for deal in data if self._evaluator.evaluate(query, deal)]
 
         data = sorted(data, key=lambda it: it.open_time)
         if count:

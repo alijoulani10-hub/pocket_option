@@ -580,6 +580,32 @@ class PocketOptionClientOn:
         return self.client.add_on("successauth", handler=handler, model=models.SuccessAuthEvent)
 
     @typing.overload
+    def deals_fail_open(
+        self,
+        handler: None = None,
+    ) -> "typing.Callable[[TypedEventListener[models.FailOpenOrderEvent]], None]": ...
+
+    @typing.overload
+    def deals_fail_open(
+        self,
+        handler: "TypedEventListener[models.FailOpenOrderEvent]",
+    ) -> None: ...
+
+    def deals_fail_open(
+        self,
+        handler: "TypedEventListener[models.FailOpenOrderEvent] | None" = None,
+    ) -> "typing.Callable[[TypedEventListener[models.FailOpenOrderEvent]], None] | None":
+        """Triggered when a deal fails to open.
+
+        Category: `deals`
+
+
+        :param handler: Callback
+        :type handler: TypedEventListener[models.FailOpenOrderEvent] | None
+        """
+        return self.client.add_on("failopenOrder", handler=handler, model=models.FailOpenOrderEvent)
+
+    @typing.overload
     def deals_success_close(
         self,
         handler: None = None,
@@ -990,6 +1016,37 @@ class PocketOptionClientOnce:
             "successauth",
             handler=handler,
             model=models.SuccessAuthEvent,
+            once=True,
+        )
+
+    @typing.overload
+    def deals_fail_open(
+        self,
+        handler: None = None,
+    ) -> "typing.Callable[[TypedEventListener[models.FailOpenOrderEvent]], None]": ...
+
+    @typing.overload
+    def deals_fail_open(
+        self,
+        handler: "TypedEventListener[models.FailOpenOrderEvent]",
+    ) -> None: ...
+
+    def deals_fail_open(
+        self,
+        handler: "TypedEventListener[models.FailOpenOrderEvent] | None" = None,
+    ) -> "typing.Callable[[TypedEventListener[models.FailOpenOrderEvent]], None] | None":
+        """Triggered when a deal fails to open.
+
+        Category: `deals`
+
+
+        :param handler: Callback
+        :type handler: TypedEventListener[models.FailOpenOrderEvent] | None
+        """
+        return self.client.add_on(
+            "failopenOrder",
+            handler=handler,
+            model=models.FailOpenOrderEvent,
             once=True,
         )
 

@@ -61,6 +61,13 @@
   pydantic_model: models.SuccessAuthEvent
   return_type: models.SuccessAuthEvent
 
+- name: deals_fail_open
+  event: failopenOrder
+  category: deals
+  doc: Triggered when a deal fails to open.
+  pydantic_model: models.FailOpenOrderEvent
+  return_type: models.FailOpenOrderEvent
+
 - name: deals_success_close
   event: successcloseOrder
   category: deals
