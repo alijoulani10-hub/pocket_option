@@ -10,12 +10,12 @@ import pydantic
 
 from pocket_option.generated_client import PocketOptionClient
 from pocket_option.models import Asset, UpdateAssetItem
-from pocket_option.q_expressions import PythonQEvaluator
+from pocket_option.q_expression import PythonQEvaluator
 
 if typing.TYPE_CHECKING:
     from pocket_option.generated_client import PocketOptionClient
     from pocket_option.models import Asset
-    from pocket_option.q_expressions import Q
+    from pocket_option.q_expression import Q
 
 __all__ = (
     "AssetsStorage",

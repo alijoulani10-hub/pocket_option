@@ -52,10 +52,10 @@ class DBOHLV(models.Model):
     id = fields.UUIDField(pk=True)
     asset = fields.CharEnumField(Asset)
     time = fields.DatetimeField()
-    open = fields.FloatField()
-    close = fields.FloatField()
-    high = fields.FloatField()
-    low = fields.FloatField()
+    open = fields.DecimalField()
+    close = fields.DecimalField()
+    high = fields.DecimalField()
+    low = fields.DecimalField()
     volume = fields.IntField()
 
     class Meta(models.Model.Meta):

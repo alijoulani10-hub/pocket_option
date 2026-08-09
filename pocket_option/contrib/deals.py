@@ -26,7 +26,7 @@ from pocket_option.models import (
     OpenDealRequest,
     SuccessCloseDealEvent,
 )
-from pocket_option.q_expressions import PythonQEvaluator, Q
+from pocket_option.q_expression import PythonQEvaluator, Q
 from pocket_option.utils import append_or_replace, generate_request_id
 
 if typing.TYPE_CHECKING:

@@ -43,9 +43,11 @@ def get_function_full_name(fn: typing.Callable) -> str:
         return fn.__pretty_name__
     if inspect.isclass(fn):
         return fn.__name__ + ".__init__"
-    if fn.__module__:
+    if fn.__module__ and hasattr(fn, "__qualname__"):
         return f"{fn.__module__}.{fn.__qualname__}"
-    return fn.__qualname__
+    if hasattr(fn, "__qualname__"):
+        return fn.__qualname__
+    return repr(fn)  # type: ignore
 
 
 def get_json_function() -> JsonFunction:

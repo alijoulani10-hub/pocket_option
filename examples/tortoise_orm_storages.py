@@ -2,11 +2,10 @@ import os
 from collections.abc import Iterable
 from uuid import UUID
 
-from pydantic import typing
 from tortoise import fields, models
-from tortoise.expressions import Q
+from tortoise.expressions import Q as TortoiseQ
 
-from pocket_option import q_expressions
+from pocket_option import q_expression
 from pocket_option.contrib.assets import AssetsStorage
 from pocket_option.contrib.deals import DealsStorage
 from pocket_option.contrib.default_init import default_init
@@ -92,37 +91,37 @@ class DBDeal(models.Model):
         table = "deals"
 
 
-class TortoiseORMQTranslator:
-    def translate(self, query: q_expressions.Q) -> Q:  # noqa: PLR0911
+class TortoiseORMQTranslator(q_expression.QTranslator[TortoiseQ]):
+    def translate(self, query: q_expression.Q) -> TortoiseQ:  # noqa: PLR0911
         match query:
-            case q_expressions.Field(name, "eq", value):
-                return Q(**{name: value})
+            case q_expression.Field(name, "eq", value):
+                return TortoiseQ(**{name: value})
 
-            case q_expressions.Field(name, "neq", value):
-                return Q(**{f"{name}__not": value})
+            case q_expression.Field(name, "neq", value):
+                return TortoiseQ(**{f"{name}__not": value})
 
-            case q_expressions.Field(name, "gt", value):
-                return Q(**{f"{name}__gt": value})
+            case q_expression.Field(name, "gt", value):
+                return TortoiseQ(**{f"{name}__gt": value})
 
-            case q_expressions.Field(name, "gte", value):
-                return Q(**{f"{name}__gte": value})
+            case q_expression.Field(name, "gte", value):
+                return TortoiseQ(**{f"{name}__gte": value})
 
-            case q_expressions.Field(name, "lt", value):
-                return Q(**{f"{name}__lt": value})
+            case q_expression.Field(name, "lt", value):
+                return TortoiseQ(**{f"{name}__lt": value})
 
-            case q_expressions.Field(name, "lte", value):
-                return Q(**{f"{name}__lte": value})
+            case q_expression.Field(name, "lte", value):
+                return TortoiseQ(**{f"{name}__lte": value})
 
-            case q_expressions.Field(name, "isnull", value):
-                return Q(**{f"{name}__isnull": value})
+            case q_expression.Field(name, "isnull", value):
+                return TortoiseQ(**{f"{name}__isnull": value})
 
-            case q_expressions.And(left, right):
+            case q_expression.And(left, right):
                 return self.translate(left) & self.translate(right)
 
-            case q_expressions.Or(left, right):
+            case q_expression.Or(left, right):
                 return self.translate(left) | self.translate(right)
 
-            case q_expressions.Not(expression):
+            case q_expression.Not(expression):
                 return ~self.translate(expression)
 
             case _:
@@ -143,14 +142,14 @@ class TortoiseORMAssetsStorage(AssetsStorage):
         assset: Asset | None = None,
         asset_id: int | None = None,
     ) -> UpdateAssetItem | None:
-        qs = Q(assset=assset) if assset is not None else Q(id=asset_id)
+        qs = TortoiseQ(assset=assset) if assset is not None else TortoiseQ(id=asset_id)
         result = await DBAsset.filter(qs).first()
         if result is None:
             return None
         return UpdateAssetItem.model_validate(result, from_attributes=True)
 
-    async def search_assets(self, *, query: q_expressions.Q | None = None) -> list[UpdateAssetItem]:
-        qs = self._translator.translate(query) if query is not None else Q()
+    async def search_assets(self, *, query: q_expression.Q | None = None) -> list[UpdateAssetItem]:
+        qs = self._translator.translate(query) if query is not None else TortoiseQ()
         return [UpdateAssetItem.model_validate(asset, from_attributes=True) async for asset in DBAsset.filter(qs)]
 
     async def add_asset(self, item: UpdateAssetItem) -> None:
@@ -186,7 +185,7 @@ class TortoiseORMDealsStorage(DealsStorage):
         )
 
     async def get_deal(self, *, deal_id: UUID | None = None, request_id: int | None = None) -> Deal | None:
-        qs = Q(id=deal_id) if deal_id is not None else Q(request_id=request_id)
+        qs = TortoiseQ(id=deal_id) if deal_id is not None else TortoiseQ(request_id=request_id)
         result = await DBDeal.filter(qs).first()
         if result is None:
             return None
@@ -195,7 +194,7 @@ class TortoiseORMDealsStorage(DealsStorage):
             from_attributes=True,
         )
 
-    async def get_deals(self, *, query: q_expressions.Q, count: int | None = None) -> Iterable[Deal]:
+    async def get_deals(self, *, query: q_expression.Q, count: int | None = None) -> Iterable[Deal]:
         quertset = DBDeal.filter(self._translator.translate(query))
         if count is not None:
             quertset = quertset.limit(count)
