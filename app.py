@@ -26,6 +26,19 @@ def health():
 @app.route("/test")
 def test():
     return "TEST OK"
+    @app.route("/library-check")
+def library_check():
+    try:
+        import pocket_option
+        return jsonify({
+            "status": "ok",
+            "library": "pocket_option loaded"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        })
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
