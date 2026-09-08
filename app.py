@@ -3,7 +3,6 @@ import os
 
 app = Flask(__name__)
 
-
 @app.route("/")
 def home():
     return jsonify({
@@ -11,13 +10,19 @@ def home():
         "message": "Pocket Option service is running"
     })
 
+@app.route("/config-check")
+def config_check():
+    return jsonify({
+        "PO_SESSION": bool(os.environ.get("PO_SESSION")),
+        "PO_UID": bool(os.environ.get("PO_UID")),
+        "IS_DEMO": bool(os.environ.get("IS_DEMO"))
+    })
 
 @app.route("/health")
 def health():
     return jsonify({
         "status": "healthy"
     })
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
