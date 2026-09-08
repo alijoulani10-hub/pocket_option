@@ -3,12 +3,26 @@ import os
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def home():
     return jsonify({
         "status": "ok",
         "message": "Pocket Option service is running"
     })
+
+
+@app.route("/health")
+def health():
+    return jsonify({
+        "status": "healthy"
+    })
+
+
+@app.route("/test")
+def test():
+    return "TEST OK"
+
 
 @app.route("/config-check")
 def config_check():
@@ -18,27 +32,24 @@ def config_check():
         "IS_DEMO": bool(os.environ.get("IS_DEMO"))
     })
 
-@app.route("/health")
-def health():
-    return jsonify({
-        "status": "healthy"
-    })
-@app.route("/test")
-def test():
-    return "TEST OK"
-    @app.route("/library-check")
+
+@app.route("/library-check")
 def library_check():
     try:
         import pocket_option
+
         return jsonify({
             "status": "ok",
             "library": "pocket_option loaded"
         })
+
     except Exception as e:
         return jsonify({
             "status": "error",
             "error": str(e)
-        })
+        }), 500
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
